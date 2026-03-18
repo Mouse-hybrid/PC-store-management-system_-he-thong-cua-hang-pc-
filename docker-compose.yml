@@ -1,0 +1,58 @@
+
+services:
+  # Dịch vụ Cơ sở dữ liệu (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: pc_store_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: db
+      MYSQL_USER: web_mobile
+      MYSQL_PASSWORD: mypassword123
+      TZ: "UTC" # Đồng bộ múi giờ với Knex và Cron Jobs
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Chứa các file SQL khởi tạo Procedures/Triggers
+      - ./db/init:/docker-entrypoint-initdb.d 
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pc_store_network
+
+  # Dịch vụ Backend (Node.js)
+  app:
+    build: .
+    container_name: pc_store_backend
+    restart: always
+    ports:
+      - "3443:3443" # Cổng HTTPS đồng bộ với Swagger
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=web_mobile
+      - DB_PASSWORD=mypassword123
+      - DB_NAME=db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./logs:/usr/src/app/logs # Lưu trữ log ra máy thật
+      - ./certs:/usr/src/app/certs # Chứa chứng chỉ SSL cho HTTPS
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - pc_store_network
+
+networks:
+  pc_store_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
