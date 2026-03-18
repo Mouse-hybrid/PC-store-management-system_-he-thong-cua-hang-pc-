@@ -1,6 +1,7 @@
 import db from '../db/db.js';
 
 class Order {
+<<<<<<< HEAD
   static async createOrder({ userId, name, phone, address, productId, quantity }) {
   // Đảm bảo có đủ 6 dấu ? và userId đứng đầu
   const rawResponse = await db.raw('CALL sp_create_order_safe(?, ?, ?, ?, ?, ?)', [
@@ -35,6 +36,18 @@ class Order {
     return db('orders')
       .where('order_id', orderId)
       .update({ status: status });
+=======
+  // LUỒNG CHÍNH: Gọi Procedure xử lý giao dịch an toàn
+  static async createOrder({ name, phone, address, productId, quantity }) {
+    const [rows] = await db.raw('CALL sp_create_order_safe(?, ?, ?, ?, ?)', [
+      name, phone, address, productId, quantity
+    ]);
+    return rows[0][0]; // Trả về { status: 'SUCCESS', new_order_id: ... }
+  }
+
+  static async getBill(orderId) {
+    return db('v_bill_details').where('order_id', orderId); // Lấy từ View
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
   }
 }
 export default Order;

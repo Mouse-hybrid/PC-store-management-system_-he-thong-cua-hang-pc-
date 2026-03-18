@@ -9,6 +9,7 @@ import db from '../db/db.js';
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
 
 export const signup = async (userData) => {
+<<<<<<< HEAD
   const { username, email, password, full_name, phone_number, address, role = 'MEMBER' } = userData;
   
   return await db.transaction(async (trx) => {
@@ -36,6 +37,21 @@ export const signup = async (userData) => {
         phone_number: phone_number,
         salary: 5000000 // Set mức lương cơ bản ban đầu
       });
+=======
+  const { username, email, password, full_name, role = 'MEMBER', phone_number, address } = userData;
+  
+  // Dùng Transaction để đảm bảo nếu tạo Profile lỗi thì User cũng không được tạo
+  return await db.transaction(async (trx) => {
+    const existingUser = await User.findByUsername(username);
+    if (existingUser) throw new AppError('Tên đăng nhập đã tồn tại', 400);
+
+    const password_hash = await bcrypt.hash(password, 12);
+    const [userId] = await trx('users').insert({ username, email, password_hash, role });
+
+    // Nếu là MEMBER, tạo thêm thông tin khách hàng
+    if (role === 'MEMBER') {
+      await trx('customers').insert({ user_id: userId, full_name, phone_number, address });
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     }
     
     return { userId, username, role };

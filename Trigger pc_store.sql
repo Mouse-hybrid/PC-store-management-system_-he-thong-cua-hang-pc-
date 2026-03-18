@@ -2,11 +2,7 @@
    FILE: Trigger pc_store.sql
    MÔ TẢ: Tự động đồng bộ kho tổng và kho items (Serial)
    ========================================================================== */
-<<<<<<< HEAD
--- USE pc_store;
-=======
 USE pc_store;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 DELIMITER $$
 
 -- 1. Trigger: Trừ kho tổng (pro_quantity) khi tạo đơn hàng mới
@@ -38,11 +34,7 @@ BEGIN
         -- B. Reset trạng thái Serial về AVAILABLE (Product Items)
         -- Giải phóng các item đã gán cho đơn hàng này để bán cho người khác
         UPDATE product_items 
-<<<<<<< HEAD
-        SET status = 'IN_STOCK', order_id = NULL, sold_date = NULL
-=======
         SET status = 'AVAILABLE', order_id = NULL, sold_date = NULL
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
         WHERE order_id = NEW.order_id;
         
     END IF;

@@ -1,4 +1,5 @@
 import User from '../models/user.js';
+<<<<<<< HEAD
 import AppError from '../utils/appError.js';
 
 export const getMyProfile = async (req, res, next) => {
@@ -8,6 +9,13 @@ export const getMyProfile = async (req, res, next) => {
     
     if (!profile) return next(new AppError('Không tìm thấy hồ sơ', 404));
 
+=======
+
+export const getMyProfile = async (req, res, next) => {
+  try {
+    // req.user được gán từ protect middleware
+    const profile = await User.getProfile(req.user.user_id, req.user.role);
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     res.ok(profile, 'Tải thông tin cá nhân thành công');
   } catch (err) {
     next(err);

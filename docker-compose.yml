@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+version: '3.8'
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 
 services:
   # Dịch vụ Cơ sở dữ liệu (MySQL)

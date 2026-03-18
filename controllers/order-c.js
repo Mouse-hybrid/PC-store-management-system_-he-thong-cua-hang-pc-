@@ -23,6 +23,7 @@ export const getOrderDetail = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+<<<<<<< HEAD
 
 };
 // Đảm bảo có từ khóa 'export' ở đây!
@@ -34,4 +35,6 @@ export const verifyOrder = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+=======
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 };

@@ -2,11 +2,7 @@
    FILE: Functions pc_store.sql
    MÔ TẢ: Các hàm tính toán bổ trợ (Helper Functions)
    ========================================================================== */
-<<<<<<< HEAD
--- USE pc_store;
-=======
 USE pc_store;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 
 DELIMITER $$
 
@@ -22,11 +18,7 @@ BEGIN
     
     SELECT COUNT(*) INTO v_count 
     FROM product_items 
-<<<<<<< HEAD
-    WHERE product_id = p_product_id AND status = 'IN_STOCK';
-=======
     WHERE product_id = p_product_id AND status = 'AVAILABLE';
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     
     RETURN IFNULL(v_count, 0);
 END $$
@@ -41,26 +33,15 @@ READS SQL DATA
 BEGIN
     DECLARE v_discount DECIMAL(15,2);
     DECLARE v_min_order DECIMAL(15,2);
-<<<<<<< HEAD
-    DECLARE v_expired DATETIME;
-=======
     DECLARE v_expiry DATETIME;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     DECLARE v_qty INT;
     DECLARE v_used INT;
 
     -- Lấy thông tin coupon
-<<<<<<< HEAD
-    SELECT value, min_order_value, expired_date, quantity, used_count
-    INTO v_discount, v_min_order, v_expired, v_qty, v_used
-    FROM coupons 
-    WHERE code = p_code;
-=======
     SELECT discount_value, min_order_value, expired_date, quantity, used_count
     INTO v_discount, v_min_order, v_expiry, v_qty, v_used
     FROM coupons 
     WHERE coupon_code = p_code;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 
     -- Nếu không tìm thấy coupon -> Giảm 0đ
     IF v_discount IS NULL THEN 
@@ -68,11 +49,7 @@ BEGIN
     END IF;
 
     -- Check 1: Hết hạn chưa?
-<<<<<<< HEAD
-    IF NOW() > v_expired THEN 
-=======
     IF NOW() > v_expiry THEN 
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
         RETURN 0;
     END IF;
 
@@ -112,11 +89,7 @@ DELIMITER ;
 -- use function example
 SELECT 
     pro_name,
-<<<<<<< HEAD
-    f_get_real_stock(pro_id) AS 'Tồn kho thực tế', -- Gọi hàm WHERE product_id = p_product_id AND status = 'IN_STOCK';
-=======
     f_get_real_stock(pro_id) AS 'Tồn kho thực tế', -- Gọi hàm 1
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     f_get_product_status_label(f_get_real_stock(pro_id)) AS 'Trạng thái' -- Gọi hàm 3 lồng vào hàm 1
 FROM products;
 

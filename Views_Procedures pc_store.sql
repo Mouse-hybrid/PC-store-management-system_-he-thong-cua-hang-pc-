@@ -2,11 +2,7 @@
    FILE: Views_Procedures pc_store.sql
    MÔ TẢ: Chứa Views báo cáo và Stored Procedures xử lý logic nghiệp vụ
    ========================================================================== */
-<<<<<<< HEAD
--- USE pc_store;
-=======
 USE pc_store;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 
 -- ==========================================================================
 -- 1. VIEWS (Góc nhìn dữ liệu)
@@ -87,10 +83,6 @@ DELIMITER $$
 
 DROP PROCEDURE IF EXISTS sp_create_order_safe $$
 CREATE PROCEDURE sp_create_order_safe(
-<<<<<<< HEAD
-	IN p_user_id INT, -- THÊM DÒNG NÀY
-=======
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     IN p_name VARCHAR(100), 
     IN p_phone VARCHAR(20), 
     IN p_addr TEXT, 
@@ -115,13 +107,8 @@ BEGIN
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lỗi: Không đủ hàng tồn kho để bán!';
         ELSE
             -- 2. Tạo đơn hàng (Master)
-<<<<<<< HEAD
-            INSERT INTO orders (user_id, guest_name, guest_phone, shipping_address, total_amount, final_amount, status)
-            VALUES (p_user_id ,p_name, p_phone, p_addr, v_price * p_qty, v_price * p_qty, 'COMPLETED');
-=======
             INSERT INTO orders (guest_name, guest_phone, shipping_address, total_amount, final_amount, status)
             VALUES (p_name, p_phone, p_addr, v_price * p_qty, v_price * p_qty, 'COMPLETED');
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
             SET v_order_id = LAST_INSERT_ID();
 
             -- 3. Tạo chi tiết đơn hàng (Detail)
@@ -136,11 +123,7 @@ BEGIN
             -- 5. Cập nhật bảng Items (Serial)
             UPDATE product_items 
             SET status = 'SOLD', order_id = v_order_id, sold_date = NOW()
-<<<<<<< HEAD
-            WHERE product_id = p_prod_id AND status = 'IN_STOCK'
-=======
             WHERE product_id = p_prod_id AND status = 'AVAILABLE'
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
             LIMIT p_qty;
             
             SELECT 'SUCCESS' AS status, v_order_id AS new_order_id;
@@ -148,10 +131,7 @@ BEGIN
     COMMIT;
 END $$
 
-<<<<<<< HEAD
-=======
 DELIMITER ;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 
 -- [THỦ TỤC 3] Tìm kiếm sản phẩm
 DROP PROCEDURE IF EXISTS sp_search_product_status $$
@@ -161,13 +141,4 @@ BEGIN
     WHERE MATCH(pro_name, description) AGAINST(p_keyword IN BOOLEAN MODE);
 END $$
 
-<<<<<<< HEAD
-CREATE OR REPLACE VIEW v_bill_details AS
-SELECT o.order_id, o.user_id, o.guest_name, o.guest_phone, o.shipping_address, o.total_amount, o.final_amount AS total, o.status AS order_status, o.created_at, od.product_id, p.pro_name AS product_name_at_purchase, od.quantity, od.price_at_purchase, od.total_line_price
-FROM orders o
-JOIN order_details od ON o.order_id = od.order_id
-JOIN products p ON od.product_id = p.pro_id;
-
-=======
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 DELIMITER ;

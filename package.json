@@ -16,7 +16,10 @@
     "test": "cross-env NODE_ENV=test jest --watchAll --detectOpenHandles"
   },
   "dependencies": {
+<<<<<<< HEAD
     "bcrypt": "^6.0.0",
+=======
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

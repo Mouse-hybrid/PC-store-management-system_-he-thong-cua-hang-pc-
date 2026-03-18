@@ -1,6 +1,10 @@
 import express from 'express';
 import * as orderController from '../controllers/order-c.js';
+<<<<<<< HEAD
 import { protect, restrictTo } from '../middlewares/auth-mw.js';
+=======
+import { protect } from '../middlewares/auth-mw.js';
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 import { validate } from '../middlewares/validate-mw.js';
 import { createOrderSchema } from '../validators/order-schema.js';
 
@@ -54,6 +58,7 @@ router.post('/', validate(createOrderSchema), orderController.createOrder);
  * description: Chưa xác thực
  */
 router.get('/:orderId', protect, orderController.getOrderDetail);
+<<<<<<< HEAD
 // Thêm dòng này vào file route của bạn
 router.patch(
   '/:orderId/verify', 
@@ -61,4 +66,7 @@ router.patch(
   restrictTo('STAFF'), 
   orderController.verifyOrder
 );
+=======
+
+>>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 export default router;
