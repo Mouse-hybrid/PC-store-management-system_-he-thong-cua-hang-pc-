@@ -1,10 +1,12 @@
-import db from '../db/db.js';
+import Report from '../models/report.js';
 
 export const getDailyRevenueReport = async () => {
-  // Truy vấn trực tiếp từ View v_daily_revenue
-  return await db('v_daily_revenue').select('*');
+  const data = await Report.getDailyRevenue();
+  return data;
 };
 
 export const getSystemAuditLogs = async (limit) => {
-  return await db('system_logs').orderBy('created_at', 'desc').limit(limit || 20); //
+  const parsedLimit = limit ? parseInt(limit, 10) : 50;
+  const logs = await Report.getSystemLogs(parsedLimit);
+  return logs;
 };

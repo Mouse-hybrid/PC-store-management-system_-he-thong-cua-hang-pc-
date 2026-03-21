@@ -49,4 +49,7 @@ router.get('/revenue', restrictTo('STAFF', 'ADMIN'), reportController.getDailyRe
  */
 router.get('/audit-logs', restrictTo('ADMIN'), reportController.getSystemLogs); //
 
+// LẤY TỔNG DOANH THU
+router.get('/revenue', restrictTo('STAFF', 'ADMIN'), reportController.getDailyRevenue); 
+router.get('/order-stats', restrictTo('STAFF', 'ADMIN'), reportController.getOrderStats);
 export default router;

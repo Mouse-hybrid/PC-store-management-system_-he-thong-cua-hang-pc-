@@ -24,6 +24,7 @@ import reportRouter from './routes/report-r.js';
 import staffRouter from './routes/staff-r.js';
 import paymentRouter from './routes/payment-r.js';
 import webhookRouter from './routes/webhook-r.js';
+import reviewRouter from './routes/review-r.js'; // Thêm dòng này vào phần import
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -50,6 +51,7 @@ app.use(responseEnhancer);
 // Cấu hình thư mục ảnh tĩnh (Để hiển thị ảnh linh kiện PC)
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+
 // --- ĐĂNG KÝ HỆ THỐNG ROUTES (API V1) ---
 
 const API_V1 = '/api/v1';
@@ -64,6 +66,7 @@ app.use(`${API_V1}/reports`, reportRouter);
 app.use(`${API_V1}/staffs`, staffRouter);
 app.use(`${API_V1}/payments`, paymentRouter);
 app.use(`${API_V1}/webhooks`, webhookRouter);
+app.use(`${API_V1}/reviews`, reviewRouter);
 
 // Tuyến đường kiểm tra nhanh
 app.get('/health', (req, res) => {

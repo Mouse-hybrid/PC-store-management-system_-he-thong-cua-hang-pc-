@@ -1,0 +1,70 @@
+1️⃣ Đăng nhập hệ thống (Lấy Token)
+Method: POST
+
+URL: https://localhost:3443/api/v1/auth/login
+
+Body (JSON):
+
+JSON
+{
+    "username": "member1",
+    "password": "member123"
+}
+👉 Mục đích: Copy chuỗi token trong kết quả trả về để dùng cho các bước sau.
+
+2️⃣ Khảo sát kho hàng (Tìm sản phẩm)
+Method: GET
+
+URL: https://localhost:3443/api/v1/products?page=1&limit=5&search=Ryzen
+
+Auth: Không cần.
+
+👉 Mục đích: Lấy pro_id của sản phẩm muốn mua (Ví dụ ID: 2).
+
+3️⃣ Đặt hàng (Chốt đơn)
+Method: POST
+
+URL: https://localhost:3443/api/v1/orders
+
+Auth (Bearer Token): Dán token ở Bước 1 vào.
+
+Body (JSON):
+
+JSON
+{
+    "guest_name": "Anh Khách Hàng Member 1",
+    "guest_phone": "0987654321",
+    "shipping_address": "Quận 1, TP. Hồ Chí Minh",
+    "product_id": 2, 
+    "quantity": 1
+}
+👉 Lưu ý: Sau bước này, đơn hàng sẽ có trạng thái PENDING.
+
+4️⃣ 🛠️ (Bước đệm Admin) Giao hàng thành công
+Mở phần mềm Database (Navicat/Workbench) chạy lệnh SQL sau để hoàn thành đơn hàng:
+
+SQL
+UPDATE orders SET status = 'COMPLETED' WHERE status = 'PENDING';
+5️⃣ Viết Đánh giá (Review)
+Method: POST
+
+URL: https://localhost:3443/api/v1/reviews
+
+Auth (Bearer Token): Dán token ở Bước 1 vào.
+
+Body (JSON):
+
+JSON
+{
+    "productId": 2 || other,
+    "rating": 1-5,
+    "comment": "Chip mạnh, render video vèo vèo! "your comment" "
+}
+6️⃣ Xem danh sách Đánh giá
+Method: GET
+
+URL: https://localhost:3443/api/v1/reviews/2
+
+Auth: Không cần.
+
+👉 Mục đích: Lấy danh sách hiển thị ra giao diện Website giống như kết quả bạn vừa làm thành công.

@@ -7,19 +7,22 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "migrate:make": "knex migrate:make",
-    "migrate:latest": "knex migrate:latest",
-    "migrate:rollback": "knex migrate:rollback",
-    "seed:make": "knex seed:make",
-    "seed:run": "knex seed:run",
-    "db:init": "npm run migrate:latest && npm run seed:run",
+    
+    "d:up": "docker-compose up -d",
+    "d:down": "docker-compose down",
+    "d:restart": "docker-compose restart app",
+    "d:logs": "docker-compose logs -f app",
+
+    "db:migrate": "docker-compose exec app npx knex migrate:latest",
+    "db:rollback": "docker-compose exec app npx knex migrate:rollback --all",
+    "db:seed": "docker-compose exec app npx knex seed:run",
+    "db:make-migrate": "npx knex migrate:make",
+    "db:make-seed": "npx knex seed:make",
+    
     "test": "cross-env NODE_ENV=test jest --watchAll --detectOpenHandles"
   },
   "dependencies": {
-<<<<<<< HEAD
     "bcrypt": "^6.0.0",
-=======
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

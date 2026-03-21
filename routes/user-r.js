@@ -1,5 +1,5 @@
 import express from 'express';
-import * as userController from '../controllers/user-c.js';
+import { getMe } from '../controllers/user-c.js';
 import { protect } from '../middlewares/auth-mw.js';
 
 const router = express.Router();
@@ -34,6 +34,7 @@ const router = express.Router();
  * schema:
  * $ref: '#/components/schemas/Error'
  */
-router.get('/me', protect, userController.getMyProfile);
+// Lấy thông tin cá nhân (Bắt buộc đăng nhập)
+router.get('/me', protect, getMe);
 
 export default router;

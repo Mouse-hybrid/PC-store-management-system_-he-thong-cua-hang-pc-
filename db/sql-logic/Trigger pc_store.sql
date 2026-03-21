@@ -2,14 +2,11 @@
    FILE: Trigger pc_store.sql
    MÔ TẢ: Tự động đồng bộ kho tổng và kho items (Serial)
    ========================================================================== */
-<<<<<<< HEAD
 -- USE pc_store;
-=======
-USE pc_store;
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
+
 DELIMITER $$
 
--- 1. Trigger: Trừ kho tổng (pro_quantity) khi tạo đơn hàng mới
+-- 1. Trigger: Trừ kho tổng khi tạo đơn hàng mới
 DROP TRIGGER IF EXISTS trg_reduce_stock_insert $$
 CREATE TRIGGER trg_reduce_stock_insert
 AFTER INSERT ON order_details
@@ -26,29 +23,21 @@ CREATE TRIGGER trg_restore_stock_cancel
 AFTER UPDATE ON orders
 FOR EACH ROW
 BEGIN
-    -- Chỉ chạy khi trạng thái chuyển sang CANCELLED
     IF NEW.status = 'CANCELLED' AND OLD.status != 'CANCELLED' THEN
-        
-        -- A. Cộng lại số lượng vào kho tổng (Products)
+        -- Hoàn kho
         UPDATE products p 
         JOIN order_details od ON p.pro_id = od.product_id
         SET p.pro_quantity = p.pro_quantity + od.quantity
         WHERE od.order_id = NEW.order_id;
         
-        -- B. Reset trạng thái Serial về AVAILABLE (Product Items)
-        -- Giải phóng các item đã gán cho đơn hàng này để bán cho người khác
+        -- Reset Serial
         UPDATE product_items 
-<<<<<<< HEAD
         SET status = 'IN_STOCK', order_id = NULL, sold_date = NULL
-=======
-        SET status = 'AVAILABLE', order_id = NULL, sold_date = NULL
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
         WHERE order_id = NEW.order_id;
-        
     END IF;
 END $$
 
--- 3. Trigger: Ghi Log hệ thống khi có đơn hàng mới
+-- 3. Trigger: Ghi Log hệ thống
 DROP TRIGGER IF EXISTS trg_new_order_log $$
 CREATE TRIGGER trg_new_order_log
 AFTER INSERT ON orders
@@ -57,5 +46,6 @@ BEGIN
     INSERT INTO system_logs (action_type, related_id, message)
     VALUES ('ORDER', NEW.order_id, CONCAT('Đơn hàng mới #', NEW.order_id, ' được tạo bởi ', NEW.guest_name));
 END $$
+
 
 DELIMITER ;

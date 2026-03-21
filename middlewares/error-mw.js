@@ -22,18 +22,12 @@ export const globalErrorHandler = (err, req, res, next) => {
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 
-<<<<<<< HEAD
   // Đảm bảo status code luôn luôn là một con số, nếu bị undefined thì ép về 500
   const finalStatusCode = error.statusCode || 500;
 
   res.status(finalStatusCode).json({
     status: error.status || 'error',
     code: finalStatusCode,
-=======
-  res.status(error.statusCode).json({
-    status: error.status,
-    code: error.statusCode,
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
     requestId: req.requestId,
     message: error.message,
     timestamp: new Date().toISOString(),

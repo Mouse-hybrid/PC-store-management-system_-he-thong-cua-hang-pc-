@@ -2,7 +2,6 @@ import Order from '../models/order.js';
 import AppError from '../utils/appError.js';
 
 export const createNewOrder = async (orderData) => {
-<<<<<<< HEAD
  try {
     const result = await Order.createOrder({
       // Chỉ gửi 5 tham số cho SQL
@@ -11,7 +10,8 @@ export const createNewOrder = async (orderData) => {
       phone: orderData.guest_phone,
       address: orderData.shipping_address,
       productId: orderData.product_id,
-      quantity: orderData.quantity
+      quantity: orderData.quantity,
+      coupon_code: orderData.coupon_code
     });
 
     // Xử lý lỗi mềm (nếu Procedure trả về status: ERROR)
@@ -68,26 +68,61 @@ export const verifyOrder = async (orderId) => {
   return {
     message: `Đơn hàng #${orderId} đã được Staff xác thực thành công!`,
     status: 'COMPLETED'
-=======
-  // Thực thi thủ tục an toàn trong DB (đã bao gồm trừ kho và gán Serial)
-  const result = await Order.createOrder({
-    name: orderData.guest_name,
-    phone: orderData.guest_phone,
-    address: orderData.shipping_address,
-    productId: orderData.product_id,
-    quantity: orderData.quantity
-  });
+  };
+};
 
-  if (result.status === 'ERROR') {
-    throw new AppError(result.message || 'Lỗi kho hàng hoặc sản phẩm không đủ', 400);
+export const getMyOrders = async (userId) => {
+  if (!userId) {
+    throw new AppError('Không tìm thấy thông tin người dùng!', 401);
+  }
+  const orders = await Order.getUserOrders(userId);
+  return orders;
+};
+
+// xử lý staff và member khi cancel order
+export const cancelOrder = async (orderId, user) => {
+  // 1. Kiểm tra đơn hàng có tồn tại không
+  const order = await Order.getOrderById(orderId);
+  if (!order) {
+    throw new AppError('Không tìm thấy đơn hàng!', 404);
   }
 
-  // Truy vấn View để lấy hóa đơn chuyên nghiệp
-  const billInfo = await Order.getBill(result.new_order_id);
-  return { 
-    order_id: result.new_order_id, 
-    items: billInfo,
-    total: billInfo.reduce((acc, item) => acc + parseFloat(item.total_line_price), 0)
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
+  // Nếu đơn đã hủy rồi thì chặn luôn
+  if (order.status === 'CANCELLED') {
+    throw new AppError('Đơn hàng này đã bị hủy trước đó rồi!', 400);
+  }
+
+  // 2. PHÂN QUYỀN VÀ LOGIC NGHIỆP VỤ
+  
+  // NẾU LÀ KHÁCH HÀNG (MEMBER)
+  if (user.role === 'MEMBER') {
+    // A. Chỉ được hủy đơn của chính mình
+    // (Giả sử id của user lưu trong token là user.id hoặc user.user_id tùy code của bạn)
+    const currentUserId = user.id || user.user_id; 
+    if (order.user_id !== currentUserId) {
+      throw new AppError('Bạn không có quyền hủy đơn hàng của người khác!', 403);
+    }
+    
+    // B. Chỉ được hủy khi đơn đang PENDING
+    if (order.status !== 'PENDING') {
+      throw new AppError('Đơn hàng đã được xử lý hoặc đang giao, bạn không thể tự hủy. Vui lòng liên hệ Hotline!', 400);
+    }
+  }
+
+  // NẾU LÀ NHÂN VIÊN (STAFF/ADMIN)
+  // Nhân viên được quyền hủy ở mọi trạng thái (PENDING, COMPLETED lỡ nhầm, SHIPPED khách boom hàng)
+  // Nên chúng ta không cần viết lệnh chặn (if) ở đây nữa.
+
+  // 3. Tiến hành chuyển trạng thái sang CANCELLED
+  // Ngay khi dòng này chạy xong, Trigger trg_restore_stock_cancel trong MySQL sẽ tự động:
+  // - Cộng lại pro_quantity vào kho
+  // - Đổi các Serial Number từ SOLD về IN_STOCK
+  await Order.updateOrderStatus(orderId, 'CANCELLED');
+
+  return {
+    message: `Đơn hàng #${orderId} đã được hủy thành công. Kho hàng vật lý đã được hoàn trả!`,
+    status: 'CANCELLED'
   };
+
+  
 };

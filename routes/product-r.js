@@ -1,7 +1,9 @@
 import express from 'express';
 import * as productController from '../controllers/product-c.js';
 import { validate } from '../middlewares/validate-mw.js';
+import { protect, restrictTo } from '../middlewares/auth-mw.js';
 import { productQuerySchema } from '../validators/product-schema.js';
+import { uploadProductImage } from '../middlewares/upload-mw.js';
 
 const router = express.Router();
 
@@ -55,7 +57,7 @@ const router = express.Router();
  * schema:
  * $ref: '#/components/schemas/Error'
  */
-router.get('/', validate(productQuerySchema), productController.getAllProducts);
+router.get('/', validate(productQuerySchema), productController.getProducts);
 
 /**
  * @swagger
@@ -88,4 +90,26 @@ router.get('/', validate(productQuerySchema), productController.getAllProducts);
  */
 router.get('/search', productController.searchProducts);
 
+// Chỉ Staff hoặc Admin mới được nhập hàng
+router.post(
+  '/import', 
+  protect, 
+  restrictTo('STAFF', 'ADMIN'), 
+  productController.importProduct
+);
+
+router.post(
+  '/:id/images', 
+  protect, 
+  restrictTo('STAFF', 'ADMIN'), 
+  uploadProductImage, 
+  productController.uploadImage
+);
+
+// 2 lệnh này buộc phải trước lấy id theo sản phẩm
+router.get('/catalog/categories', productController.getAllCategories);
+router.get('/catalog/brands', productController.getAllBrands);
+
+// Đặt dòng này dưới các route GET / khác để không bị xung đột
+router.get('/:id', productController.getProductById);
 export default router;

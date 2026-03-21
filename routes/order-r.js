@@ -1,10 +1,6 @@
 import express from 'express';
 import * as orderController from '../controllers/order-c.js';
-<<<<<<< HEAD
 import { protect, restrictTo } from '../middlewares/auth-mw.js';
-=======
-import { protect } from '../middlewares/auth-mw.js';
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 import { validate } from '../middlewares/validate-mw.js';
 import { createOrderSchema } from '../validators/order-schema.js';
 
@@ -35,7 +31,9 @@ const router = express.Router();
  * 400:
  * $ref: '#/components/schemas/Error'
  */
-router.post('/', validate(createOrderSchema), orderController.createOrder);
+router.get('/', protect, restrictTo('STAFF', 'ADMIN'), orderController.getAllOrders);
+
+router.post('/', protect, validate(createOrderSchema), orderController.createOrder);
 
 /**
  * @swagger
@@ -57,8 +55,19 @@ router.post('/', validate(createOrderSchema), orderController.createOrder);
  * 401:
  * description: Chưa xác thực
  */
+// ĐẶT DÒNG NÀY LÊN TRÊN CÙNG (Dưới đoạn router.post('/'))
+/**
+ * @swagger
+ * /orders/my-orders:
+ * get:
+ * summary: Xem lịch sử mua hàng của tôi (Khách hàng)
+ * tags: [Orders]
+ * security:
+ * - bearerAuth: []
+ */
+router.get('/my-orders', protect, orderController.getMyOrders);
+
 router.get('/:orderId', protect, orderController.getOrderDetail);
-<<<<<<< HEAD
 // Thêm dòng này vào file route của bạn
 router.patch(
   '/:orderId/verify', 
@@ -66,7 +75,16 @@ router.patch(
   restrictTo('STAFF'), 
   orderController.verifyOrder
 );
-=======
-
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
+// Thêm API Hủy đơn hàng (Member và Staff đều dùng được)
+router.patch(
+  '/:orderId/cancel', 
+  protect, 
+  orderController.cancelOrder
+);
+// API Admin duyệt đơn / Hủy đơn
+router.patch('/:orderId/status',
+    protect,
+     restrictTo('ADMIN', 'STAFF'),
+      orderController.updateOrderStatus);
+      
 export default router;

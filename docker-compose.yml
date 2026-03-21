@@ -32,7 +32,7 @@ services:
     container_name: pc_store_backend
     restart: always
     ports:
-      - "3443:3443" # Cổng HTTPS đồng bộ với Swagger
+      - "3443:3443" 
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -42,9 +42,9 @@ services:
       - DB_NAME=db
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
-      - ./logs:/usr/src/app/logs # Lưu trữ log ra máy thật
-      - ./certs:/usr/src/app/certs # Chứa chứng chỉ SSL cho HTTPS
+      - node_modules_data:/usr/src/app/node_modules # SỬA DÒNG NÀY: Thêm 'node_modules_data:'
+      - ./logs:/usr/src/app/logs 
+      - ./certs:/usr/src/app/certs 
     depends_on:
       db:
         condition: service_healthy
@@ -57,3 +57,4 @@ networks:
 
 volumes:
   mysql_data:
+  node_modules_data: # THÊM DÒNG NÀY Ở ĐÁY FILE

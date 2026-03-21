@@ -12,3 +12,11 @@ export const couponSchema = z.object({
     })
   })
 });
+
+// THÊM SCHEMA (Dành riêng cho API Check mã)
+export const checkCouponSchema = z.object({
+  body: z.object({
+    code: z.string().min(1, 'Vui lòng nhập mã giảm giá'),
+    totalAmount: z.number().min(0, 'Tổng tiền không hợp lệ')
+  })
+});

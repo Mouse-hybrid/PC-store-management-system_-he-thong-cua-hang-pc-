@@ -4,20 +4,42 @@ export const seed = async function(knex) {
   await knex('payments').truncate();
   await knex('order_details').truncate();
   await knex('orders').truncate();
-  await knex('coupons').truncate(); // Thêm dọn dẹp bảng coupons
+  await knex('coupons').truncate(); 
   await knex('system_logs').truncate();
 
-  // 2. TẠO MÃ GIẢM GIÁ (Để test hàm f_calculate_discount_amount)
-  // Lưu ý: Dùng 'quantity' và 'expired_date' để chiều theo code SQL của bạn
+  // 2. TẠO MÃ GIẢM GIÁ (Thêm 3 kịch bản khác nhau)
   await knex('coupons').insert([
     {
+      // Kịch bản 1: Giảm tiền mặt (Bình thường)
       code: 'WELCOME20',
       type: 'FIXED',
       value: 20000.00,
       min_order_value: 100000.00,
-      quantity: 100,      // Khớp với cột quantity trong SQL
+      quantity: 100,      
       used_count: 0,
-      expired_date: '2026-12-31 23:59:59', // Khớp với cột expired_date trong SQL
+      expired_date: '2026-12-31 23:59:59', 
+      is_active: true
+    },
+    {
+      // Kịch bản 2: Giảm theo phần trăm (Ví dụ: Giảm 10%)
+      code: 'TET10',
+      type: 'PERCENT',
+      value: 10.00, 
+      min_order_value: 0.00, // Không yêu cầu đơn tối thiểu
+      quantity: 50,
+      used_count: 5,
+      expired_date: '2026-12-31 23:59:59',
+      is_active: true
+    },
+    {
+      // Kịch bản 3: Mã đã hết hạn (Bị chặn)
+      code: 'HETHAN50',
+      type: 'FIXED',
+      value: 50000.00,
+      min_order_value: 200000.00,
+      quantity: 100,
+      used_count: 0,
+      expired_date: '2025-01-01 00:00:00', // Ngày hết hạn ở trong quá khứ
       is_active: true
     }
   ]);
@@ -71,4 +93,5 @@ export const seed = async function(knex) {
   ]);
 
   await knex.raw('SET FOREIGN_KEY_CHECKS = 1');
+  console.log('✅ Đã nạp thành công phương hóa đơn và thanh toán');
 };

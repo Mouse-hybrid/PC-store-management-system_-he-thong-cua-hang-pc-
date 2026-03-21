@@ -1,7 +1,6 @@
 import Product from '../models/product.js';
 import ProductItem from '../models/product-item.js'; // CẦN BỔ SUNG
 import AppError from '../utils/appError.js';
-<<<<<<< HEAD
 import db from '../db/db.js'
 
 export const listAllProducts = async () => {
@@ -14,11 +13,6 @@ export const listAllProducts = async () => {
     )
     .leftJoin('brands as b', 'p.brand_id', 'b.brand_id')
     .leftJoin('categories as c', 'p.category_id', 'c.category_id');
-=======
-
-export const listAllProducts = async () => {
-  return await Product.findAll(); 
->>>>>>> f42558b2c199dd3e958fcd5af79d3c8e84e58a21
 };
 
 export const getInventoryBySerial = async (serial) => {
