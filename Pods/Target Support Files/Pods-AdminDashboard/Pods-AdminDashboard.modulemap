@@ -1,0 +1,6 @@
+framework module Pods_AdminDashboard {
+  umbrella header "Pods-AdminDashboard-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,36 @@
+PODS:
+  - Alamofire (5.11.1)
+  - DGCharts (5.1.0):
+    - DGCharts/Core (= 5.1.0)
+  - DGCharts/Core (5.1.0)
+  - Kingfisher (8.8.0)
+  - SnapKit (5.7.1)
+  - SVProgressHUD (2.3.1):
+    - SVProgressHUD/Core (= 2.3.1)
+  - SVProgressHUD/Core (2.3.1)
+
+DEPENDENCIES:
+  - Alamofire
+  - DGCharts
+  - Kingfisher
+  - SnapKit
+  - SVProgressHUD
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - DGCharts
+    - Kingfisher
+    - SnapKit
+    - SVProgressHUD
+
+SPEC CHECKSUMS:
+  Alamofire: eec6cd8f73b242b59e34153a606a909eb9864b14
+  DGCharts: 1c6daf585b6cfc78807af44ea690d357c410627f
+  Kingfisher: beeaf65ed57dfa710d416aea4093277e8a9b1968
+  SnapKit: d612e99e678a2d3b95bf60b0705ed0a35c03484a
+  SVProgressHUD: 4837c74bdfe2e51e8821c397825996a8d7de6e22
+
+PODFILE CHECKSUM: 22a8737848dbf486005c5a7cbc467e91475a7992
+
+COCOAPODS: 1.16.2
