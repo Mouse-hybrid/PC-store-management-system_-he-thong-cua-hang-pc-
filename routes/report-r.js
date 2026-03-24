@@ -51,5 +51,12 @@ router.get('/audit-logs', restrictTo('ADMIN'), reportController.getSystemLogs); 
 
 // LẤY TỔNG DOANH THU
 router.get('/revenue', restrictTo('STAFF', 'ADMIN'), reportController.getDailyRevenue); 
+// Tổng đơn hàng đã đặt (Pending -> Completed)
 router.get('/order-stats', restrictTo('STAFF', 'ADMIN'), reportController.getOrderStats);
 export default router;
+
+// Báo cáo Tài chính Tổng quan (Total, Pending, Refunds)
+router.get('/finance-overview', restrictTo('STAFF', 'ADMIN'), reportController.getFinanceOverview);
+
+// Danh sách giao dịch gần nhất
+router.get('/recent-transactions', restrictTo('STAFF', 'ADMIN'), reportController.getRecentTransactions);

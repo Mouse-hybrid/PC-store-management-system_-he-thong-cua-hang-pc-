@@ -89,3 +89,81 @@ export const uploadImage = async (req, res, next) => {
     next(err);
   }
 };
+
+// 1. Hàm cập nhật thông tin sản phẩm (Chuẩn Knex.js)
+
+export const updateProduct = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { pro_name, pro_sku, pro_price } = req.body;
+
+    // Dùng cú pháp của Knex để UPDATE
+    const updatedRows = await db('products')
+      .where('pro_id', id)
+      .update({
+        pro_name: pro_name,
+        pro_sku: pro_sku,
+        pro_price: pro_price
+      });
+
+    if (updatedRows === 0) {
+      return res.status(404).json({ status: 'error', message: 'Không tìm thấy sản phẩm' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Cập nhật sản phẩm thành công'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 2. Hàm nhập kho (Restock) - Đã sửa lỗi 7 tham số
+export const restockProduct = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { quantity } = req.body;
+    
+    // Lấy ID Admin/Staff đang đăng nhập (mặc định 1 nếu test chưa có token)
+    const staffId = req.user?.id || req.user?.staff_id || 1; 
+
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({ status: 'error', message: 'Số lượng không hợp lệ' });
+    }
+
+    // 👉 BƯỚC MỚI: Lấy thông tin hiện tại của SP để lấy đủ 7 tham số
+    const product = await db('products').where('pro_id', id).first();
+    
+    if (!product) {
+      return res.status(404).json({ status: 'error', message: 'Không tìm thấy sản phẩm này' });
+    }
+
+    // 👉 TRUYỀN ĐỦ 7 THAM SỐ VÀO PROCEDURE (Thứ tự dựa trên bảng của bạn)
+    await db.raw('CALL sp_import_product_safe(?, ?, ?, ?, ?, ?, ?)', [
+      staffId,             // ? 1 
+      id,                  // ? 2 
+      product.pro_price,   // ? 3 
+      quantity,            // ? 4 
+      product.brand_id,    // ? 5  
+      product.category_id, // ? 6 
+      product.pro_name     // ? 7 
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      message: `Admin/Staff ${staffId} đã nhập thêm ${quantity} cái cho sản phẩm ${product.pro_name}`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteProduct = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const deleted = await db('products').where('pro_id', id).del(); // Xóa trong MySQL bằng Knex
+    if (!deleted) return res.status(404).json({ status: 'fail', message: 'Không thấy SP' });
+    res.status(200).json({ status: 'success', message: 'Đã xóa sản phẩm khỏi kho' });
+  } catch (error) { next(error); }
+};

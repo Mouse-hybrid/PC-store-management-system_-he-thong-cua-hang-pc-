@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMe } from '../controllers/user-c.js';
+import { getMe, getAllUsers, deactivateUser } from '../controllers/user-c.js';
 import { protect } from '../middlewares/auth-mw.js';
 
 const router = express.Router();
@@ -37,4 +37,9 @@ const router = express.Router();
 // Lấy thông tin cá nhân (Bắt buộc đăng nhập)
 router.get('/me', protect, getMe);
 
+// 👉 Lấy danh sách toàn bộ người dùng (Cho trang Admin User Management)
+router.get('/', protect, getAllUsers);
+
+// 👉 Khóa tài khoản người dùng
+router.patch('/:id/deactivate', protect, deactivateUser);
 export default router;

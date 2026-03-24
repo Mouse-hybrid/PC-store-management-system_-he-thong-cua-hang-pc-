@@ -88,7 +88,22 @@ router.get('/', validate(productQuerySchema), productController.getProducts);
  * schema:
  * $ref: '#/components/schemas/Error'
  */
-router.get('/search', productController.searchProducts);
+
+// 👉 1. API MỚI: Cập nhật thông tin cơ bản của sản phẩm (Tên, SKU, Giá)
+router.put(
+  '/:id',
+  protect,
+  restrictTo('STAFF', 'ADMIN'),
+  productController.updateProduct
+);
+
+// 👉 2. API MỚI: Nhập thêm số lượng (Restock) cho 1 sản phẩm
+router.post(
+  '/:id/restock',
+  protect,
+  restrictTo('STAFF', 'ADMIN'),
+  productController.restockProduct
+);
 
 // Chỉ Staff hoặc Admin mới được nhập hàng
 router.post(
@@ -112,4 +127,9 @@ router.get('/catalog/brands', productController.getAllBrands);
 
 // Đặt dòng này dưới các route GET / khác để không bị xung đột
 router.get('/:id', productController.getProductById);
+router.get('/search', productController.searchProducts);
+
+// Gọi hàm xóa sản phẩm
+router.delete('/:id', protect, restrictTo('ADMIN'), productController.deleteProduct);
+
 export default router;
