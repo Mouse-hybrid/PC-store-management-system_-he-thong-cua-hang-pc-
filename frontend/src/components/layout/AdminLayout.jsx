@@ -16,7 +16,7 @@ const AdminLayout = () => {
     { name: 'Category Management', path: '/admin/categories', icon: '🗂️' },
     { name: 'Promotion Management', path: '/admin/promotions', icon: '🏷️' },
     { name: 'User Management', path: '/admin/users', icon: '👥' },
-    { name: 'Staff Management', path: '/admin/staff', icon: '👨‍💼' },
+    { name: 'Staff Management', path: '/admin/staffs', icon: '👨‍💼' },
     { name: 'Sales Reports', path: '/admin/reports', icon: '📈' },
     { name: 'Staff portal', path: '/staff', icon: '🚪' },
     { name: 'Settings', path: '/admin/settings', icon: '⚙️' },

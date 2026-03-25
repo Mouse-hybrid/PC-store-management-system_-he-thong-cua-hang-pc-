@@ -17,6 +17,8 @@ import StaffPortal from '../pages/Staff/StaffPortal';
 import Orders from '../pages/Staff/Orders';
 import Settings from '../pages/Staff/Settings';
 import AdminSettings from '../pages/Admin/AdminSettings';
+import StaffManagement from '../pages/Admin/StaffManagement';
+import UserManagement from '../pages/Admin/UserManagement';
 
 // Tạo các component giả cho các trang chưa code để tránh lỗi UI
 const Inventory = () => <div className="p-8"><h1 className="text-2xl font-bold">Inventory Page</h1></div>;
@@ -45,6 +47,8 @@ const AppRouter = () => {
           
           {/* Bạn có thể thêm các trang khác của Admin vào đây sau */}
           {/* <Route path="orders" element={<AdminOrders />} /> */}
+          <Route path="users" element={<UserManagement />} />
+          <Route path="staffs" element={<StaffManagement />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Route>
