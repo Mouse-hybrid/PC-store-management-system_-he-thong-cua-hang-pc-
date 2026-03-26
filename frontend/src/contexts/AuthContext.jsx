@@ -4,14 +4,17 @@ import { createContext, useState, useContext } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Giả lập state user. Thực tế bạn sẽ lấy data từ API (Node/Express) và localStorage
-  // VD: { name: 'Alex', role: 'admin' }
-  const [user, setUser] = useState(null); 
+  // 1. Lấy user từ localStorage nếu có (Giúp giữ trạng thái đăng nhập khi F5 reload trang)
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user_info');
+    return savedUser ? JSON.parse(savedUser) : null;
+  }); 
 
-  // Hàm đăng xuất
+  // 2. Hàm đăng xuất: Xóa State và dọn dẹp bộ nhớ LocalStorage
   const logout = () => {
     setUser(null);
-    // Xóa token ở localStorage tại đây
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_info');
   };
 
   return (

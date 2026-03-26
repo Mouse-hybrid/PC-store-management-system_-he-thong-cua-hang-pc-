@@ -1,258 +1,313 @@
 // src/pages/Admin/ProductManagement.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axiosClient from '../../api/axiosClient';
+
+const BACKEND_URL = 'https://localhost:3443'; // Thay bằng URL Backend của bạn
 
 const ProductManagement = () => {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  // 1. Thêm data mẫu có đầy đủ Brand và Description
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      sku: 'NV-4090-FE',
-      name: 'RTX 4090 GPU',
-      brand: 'nvidia',
-      category: 'COMPONENTS',
-      price: '1599.99',
-      stock: '12',
-      status: 'In Stock',
-      icon: '💻',
-      warranty: '36 Months',
-      description: 'Card đồ họa NVIDIA GeForce RTX 4090 Founders Edition siêu mạnh mẽ'
-    }
-  ]);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
 
   const [formData, setFormData] = useState({
-    sku: '', name: '', brand: '', category: '', price: '', quantity: '', warranty: '', description: ''
+    sku: '', name: '', brandId: '', catId: '', price: '', quantity: '', warranty: '', description: '',
+    currentImageUrl: '' 
   });
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
+    try {
+      setLoading(true);
+      const [prodRes, catRes, brandRes] = await Promise.all([
+        axiosClient.get('/products'),
+        axiosClient.get('/products/catalog/categories'),
+        axiosClient.get('/products/catalog/brands')
+      ]);
+
+      setProducts(prodRes.data || []);
+      setCategories(catRes.data || []);
+      setBrands(brandRes.data || []);
+    } catch (error) {
+      console.error("Lỗi tải dữ liệu sản phẩm:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
-      setProducts(products.filter(product => product.id !== id));
-    }
-  };
-
   const handleEditClick = (product) => {
-    // 2. VÁ LỖI: Đổ đầy đủ Brand, Warranty, Description cũ vào form khi bấm nút Sửa
     setFormData({
-      sku: product.sku,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      quantity: product.stock,
-      brand: product.brand || '', 
-      warranty: product.warranty || '', 
-      description: product.description || '' 
+      sku: product.pro_sku || '',
+      name: product.pro_name || '',
+      price: product.pro_price || '',
+      quantity: product.pro_quantity || '', 
+      brandId: product.brand_id || '',
+      catId: product.category_id || '', 
+      warranty: product.pro_warranty || '', 
+      description: product.description || '',
+      // Lấy link ảnh từ DB
+      currentImageUrl: product.image_url ? `${BACKEND_URL}${product.image_url}` : ''
     });
-    setEditingId(product.id);
+    setEditingId(product.pro_id);
     setIsAddingNew(true);
+    setSelectedImageFile(null); // Reset file preview
   };
 
-  const handleSubmit = (e) => {
+  const handleDelete = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi kho?")) {
+      try {
+        await axiosClient.delete(`/products/${id}`);
+        setProducts(products.filter(p => p.pro_id !== id));
+        alert("Đã xóa sản phẩm thành công!");
+      } catch (error) {
+        alert(error.response?.data?.message || "Lỗi khi xóa sản phẩm");
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      let currentProductId = editingId;
 
-    if (!formData.name || !formData.price) {
-      alert("Vui lòng nhập Tên sản phẩm và Giá!");
-      return;
+      if (editingId) {
+        await axiosClient.put(`/products/${editingId}`, {
+          pro_name: formData.name, pro_sku: formData.sku, pro_price: formData.price,
+          category_id: parseInt(formData.catId), brand_id: parseInt(formData.brandId),     
+          pro_warranty: formData.warranty, description: formData.description
+        });
+      } else {
+        const res = await axiosClient.post('/products/import', {
+          sku: formData.sku, name: formData.name, price: formData.price, qty: formData.quantity,
+          brandId: parseInt(formData.brandId), catId: parseInt(formData.catId), description: formData.description
+        });
+        currentProductId = res.data?.data?.insertId || res.data?.data?.pro_id || null;
+      }
+
+      // Xử lý Upload Ảnh
+      if (selectedImageFile && currentProductId) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', selectedImageFile); 
+
+        await axiosClient.post(`/products/${currentProductId}/images`, imageFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+
+      alert("Lưu sản phẩm thành công!");
+      setIsAddingNew(false);
+      setEditingId(null);
+      setSelectedImageFile(null); 
+      fetchInitialData(); 
+    } catch (error) {
+      alert(error.response?.data?.message || "Lỗi khi lưu dữ liệu hoặc upload ảnh");
     }
-
-    // 3. VÁ LỖI: Gom đủ Brand, Warranty, Description vào cục data để lưu
-    const productData = {
-      sku: formData.sku || `SKU-${Math.floor(Math.random() * 1000)}`,
-      name: formData.name,
-      brand: formData.brand,           // <-- Đã lấy dữ liệu
-      category: formData.category || 'OTHER',
-      price: formData.price,
-      stock: formData.quantity || '0',
-      warranty: formData.warranty,     // <-- Đã lấy dữ liệu
-      description: formData.description, // <-- Đã lấy dữ liệu
-      status: Number(formData.quantity) > 0 ? 'In Stock' : 'Out of Stock',
-      icon: '📦'
-    };
-
-    if (editingId) {
-      setProducts(products.map(p => p.id === editingId ? { ...p, ...productData, id: editingId } : p));
-    } else {
-      setProducts([{ ...productData, id: Date.now() }, ...products]);
-    }
-    closeForm();
   };
 
-  const closeForm = () => {
-    setIsAddingNew(false);
-    setEditingId(null);
-    setFormData({ sku: '', name: '', brand: '', category: '', price: '', quantity: '', warranty: '', description: '' });
-  };
+  if (loading && products.length === 0) return <div className="p-8 text-center font-bold text-blue-600">Đang kết nối kho hàng...</div>;
 
-  // --- GIAO DIỆN FORM (GIỮ NGUYÊN) ---
   if (isAddingNew) {
     return (
-      <div className="max-w-4xl bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <h2 className="text-xl font-bold mb-6">{editingId ? "Edit Product" : "Add New Product"}</h2>
+      <div className="max-w-4xl bg-white rounded-xl shadow-sm border border-gray-200 p-8 mx-auto">
+        <h2 className="text-xl font-bold mb-6 text-blue-600">{editingId ? "Chỉnh sửa sản phẩm" : "Nhập kho sản phẩm mới"}</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Product SKU</label>
-              <input type="text" name="sku" value={formData.sku} onChange={handleInputChange} placeholder="e.g. CPU-INT-12900K" className="w-full p-3 border border-gray-200 rounded-lg outline-none" />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Mã SKU</label>
+              <input type="text" name="sku" value={formData.sku} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg outline-none" required />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Product Name <span className="text-red-500">*</span></label>
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g. Intel Core i9-12900K" className="w-full p-3 border border-gray-200 rounded-lg outline-none" required />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Tên sản phẩm</label>
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg outline-none" required />
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
-              <select name="brand" value={formData.brand} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg bg-white">
-                <option value="">Select Brand</option>
-                <option value="intel">Intel</option>
-                <option value="amd">AMD</option>
-                <option value="nvidia">Nvidia</option>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Thương hiệu</label>
+              <select name="brandId" value={formData.brandId || ''} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg bg-white" required>
+                <option value="">-- Chọn Thương hiệu --</option>
+                {brands.map(b => {
+                  const id = b.brand_id || b.id;
+                  const name = b.brand_name || b.name;
+                  return <option key={id} value={id}>{name}</option>;
+                })}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
-              <select name="category" value={formData.category} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg bg-white">
-                <option value="">Select Category</option>
-                <option value="COMPONENTS">Components</option>
-                <option value="PERIPHERALS">Peripherals</option>
-                <option value="LAPTOPS">Laptops</option>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Danh mục</label>
+              <select name="catId" value={formData.catId || ''} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg bg-white" required>
+                <option value="">-- Chọn Danh mục --</option>
+                {categories.map(c => {
+                  const id = c.category_id || c.cat_id || c.id;
+                  const name = c.category_name || c.cat_name || c.name;
+                  return <option key={id} value={id}>{name}</option>;
+                })}
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Price ($) <span className="text-red-500">*</span></label>
-              <input type="number" name="price" value={formData.price} onChange={handleInputChange} placeholder="0.00" className="w-full p-3 border border-gray-200 rounded-lg" required />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Giá niêm yết (₫)</label>
+              <input type="number" name="price" value={formData.price} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg" required />
             </div>
+            {!editingId && (
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Số lượng nhập</label>
+                <input type="number" name="quantity" value={formData.quantity} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg" required />
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Quantity</label>
-              <input type="number" name="quantity" value={formData.quantity} onChange={handleInputChange} placeholder="0" className="w-full p-3 border border-gray-200 rounded-lg" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Warranty</label>
-              <input type="text" name="warranty" value={formData.warranty} onChange={handleInputChange} placeholder="e.g. 12 months" className="w-full p-3 border border-gray-200 rounded-lg" />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Bảo hành (tháng)</label>
+              <input type="text" name="warranty" value={formData.warranty} onChange={handleInputChange} className="w-full p-3 border border-gray-200 rounded-lg" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
-            <textarea name="description" value={formData.description} onChange={handleInputChange} rows="4" placeholder="Enter detailed product specifications..." className="w-full p-3 border border-gray-200 rounded-lg"></textarea>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Mô tả chi tiết</label>
+            <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className="w-full p-3 border border-gray-200 rounded-lg"></textarea>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <button type="button" onClick={closeForm} className="px-6 py-2.5 font-bold text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-            <button type="submit" className="px-6 py-2.5 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700">{editingId ? "Update Product" : "Save Product"}</button>
+          {/* GIAO DIỆN UPLOAD ẢNH ĐƯỢC TINH CHỈNH GỌN GÀNG */}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Ảnh sản phẩm</label>
+            <div className="flex items-center gap-6 border p-4 rounded-lg bg-gray-50">
+              
+              {/* Hiện ảnh từ Database (Nếu đang sửa và chưa chọn ảnh mới) */}
+              {editingId && formData.currentImageUrl && !selectedImageFile && (
+                <div className="text-center">
+                  <p className="text-[10px] text-gray-400 mb-1">Ảnh hiện tại:</p>
+                  <img src={formData.currentImageUrl} alt="Current" className="w-16 h-16 object-contain rounded border bg-white" />
+                </div>
+              )}
+
+              {/* Tính năng mới: Hiện ảnh Preview từ máy tính ngay lập tức */}
+              {selectedImageFile && (
+                <div className="text-center">
+                  <p className="text-[10px] text-blue-500 font-bold mb-1">Sẽ tải lên:</p>
+                  <img src={URL.createObjectURL(selectedImageFile)} alt="Preview" className="w-16 h-16 object-contain rounded border border-blue-400 bg-white shadow-sm" />
+                </div>
+              )}
+
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => setSelectedImageFile(e.target.files[0])} 
+                className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer outline-none" 
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button type="button" onClick={() => { setIsAddingNew(false); setEditingId(null); setSelectedImageFile(null); }} className="px-6 py-2.5 font-bold text-gray-600 border rounded-lg hover:bg-gray-50">Hủy</button>
+            <button type="submit" className="px-6 py-2.5 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700">Lưu sản phẩm</button>
           </div>
         </form>
       </div>
     );
   }
 
-  // --- GIAO DIỆN DANH SÁCH SẢN PHẨM ---
   return (
     <div className="space-y-6">
-      <div className="flex justify-end mb-4">
-        <button onClick={() => { setIsAddingNew(true); setEditingId(null); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
-          + Add New Product
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Quản lý Kho hàng</h1>
+        <button onClick={() => { setIsAddingNew(true); setEditingId(null); setSelectedImageFile(null); setFormData({ sku:'', name:'', brandId:'', catId:'', price:'', quantity:'', warranty:'', description:'', currentImageUrl:'' }); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">
+          + Nhập hàng mới
         </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-gray-500 font-medium text-sm">Total Products</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{products.length + 1247}</p> 
-          <p className="text-green-500 text-sm font-bold mt-2">↗ +12% from last month</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-gray-500 font-medium text-sm">Out of Stock</p>
-          <p className="text-3xl font-bold text-red-600 mt-2">14</p>
-          <p className="text-gray-400 text-sm mt-2">Requires immediate attention</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-gray-500 font-medium text-sm">Inventory Value</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">$245,600.00</p>
-          <p className="text-green-500 text-sm font-bold mt-2">↗ +5.4% growth</p>
-        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase border-b border-gray-100">
+          <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase border-b">
             <tr>
-              <th className="px-6 py-4">Product</th>
-              <th className="px-6 py-4">Category</th>
-              <th className="px-6 py-4">Price</th>
-              <th className="px-6 py-4">Stock</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-center">Actions</th>
+              <th className="px-6 py-4">Sản phẩm</th>
+              <th className="px-6 py-4 text-center">Ảnh</th>
+              <th className="px-6 py-4">Danh mục</th>
+              <th className="px-6 py-4">Giá bán</th>
+              <th className="px-6 py-4">Tồn kho</th>
+              <th className="px-6 py-4">Trạng thái</th>
+              <th className="px-6 py-4 text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {products.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-xl mt-1">{item.icon}</div>
-                    
-                    {/* 4. CHỈNH SỬA GIAO DIỆN CỘT PRODUCT ĐỂ HIỆN BRAND VÀ DESCRIPTION */}
-                    <div className="max-w-[250px]">
-                      <p className="font-bold text-gray-900">{item.name}</p>
-                      
-                      {/* Khu vực chứa SKU và Tem Brand */}
-                      <div className="flex gap-2 items-center mt-0.5">
-                        <span className="text-xs text-gray-500">SKU: {item.sku}</span>
-                        {item.brand && (
-                          <span className="text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-bold uppercase">
-                            {item.brand}
-                          </span>
-                        )}
-                      </div>
-                      
-                      {/* Khu vực chứa Description (Giới hạn 1 dòng, hover để xem hết) */}
-                      {item.description && (
-                        <p className="text-xs text-gray-400 mt-1 truncate" title={item.description}>
-                          {item.description}
-                        </p>
-                      )}
+            {products.map((item) => {
+              // Kết hợp Backend URL vào ảnh để hiển thị
+              let productImageUrl = null;
+              if (item.image_url) {
+                // Nếu DB thiếu dấu '/', ta tự động thêm vào
+                const formattedPath = item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`;
+                productImageUrl = `${BACKEND_URL}${formattedPath}`;
+              }
+              
+              return (
+                <tr key={item.pro_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <p className="font-bold text-gray-900">{item.pro_name}</p>
+                      <span className="text-[10px] text-gray-400 font-mono">SKU: {item.pro_sku}</span>
                     </div>
-                    {/* KẾT THÚC VÙNG CHỈNH SỬA */}
-
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                    {item.category.toUpperCase()}
-                  </span>
-                </td>
-                <td className="px-6 py-4 font-bold">${item.price}</td>
-                <td className="px-6 py-4 text-gray-600">{item.stock} units</td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${
-                    item.status === 'In Stock' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
-                    {item.status === 'In Stock' ? '● In Stock' : '● Out of Stock'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 flex justify-center gap-4">
-                  <button onClick={() => handleEditClick(item)} className="text-gray-400 hover:text-blue-600 transition-colors" title="Edit">✏️</button>
-                  <button onClick={() => handleDelete(item.id)} className="text-gray-400 hover:text-red-600 transition-colors" title="Delete">🗑️</button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  
+                  {/* Ô CHỨA ẢNH ĐƯỢC THU NHỎ GỌN GÀNG (object-contain giúp ảnh không bị cắt xén) */}
+                  <td className="px-6 py-4 flex justify-center">
+                    {productImageUrl ? (
+                      <div className="w-14 h-14 p-1 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center justify-center">
+                        {/* object-contain giúp ảnh luôn giữ đúng tỷ lệ, không bị cắt xén, nằm gọn trong viền */}
+                        <img 
+                          src={productImageUrl} 
+                          alt={item.pro_name} 
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs">
+                        No IMG
+                      </div>
+                    )}
+                  </td>
+                  
+                  <td className="px-6 py-4">
+                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                      {item.cat_name || "Chưa phân loại"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-bold text-gray-900">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.pro_price)}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 font-medium">
+                    {item.pro_quantity} sản phẩm
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${
+                      item.pro_quantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {item.pro_quantity > 0 ? 'CÒN HÀNG' : 'HẾT HÀNG'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center gap-3">
+                      <button onClick={() => handleEditClick(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Sửa thông tin">✏️</button>
+                      <button onClick={() => handleDelete(item.pro_id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa vĩnh viễn">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-        
-        {products.length === 0 && (
-           <div className="p-8 text-center text-gray-500 font-medium">Chưa có sản phẩm nào. Hãy thêm mới!</div>
-        )}
       </div>
     </div>
   );

@@ -1,88 +1,84 @@
 // src/pages/Admin/SalesReports.jsx
-import React from 'react';
-import { 
-  LineChart, Line, BarChart, Bar, XAxis, Tooltip, ResponsiveContainer 
-} from 'recharts';
+import React, { useState, useEffect } from 'react';
+import axiosClient from '../../api/axiosClient';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const SalesReports = () => {
-  const revenueData = [
-    { month: 'JAN', value: 30 }, { month: 'FEB', value: 65 }, { month: 'MAR', value: 40 },
-    { month: 'APR', value: 80 }, { month: 'MAY', value: 20 }, { month: 'JUN', value: 10 }
-  ];
+  const [revenueData, setRevenueData] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const categorySales = [
-    { name: 'GPU', value: 80 }, { name: 'CPU', value: 60 }, { name: 'RAM', value: 90 },
-    { name: 'SSD', value: 70 }, { name: 'MB', value: 40 }, { name: 'PSU', value: 50 }
-  ];
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      const [revRes, logRes] = await Promise.all([
+        axiosClient.get('/reports/revenue'),
+        axiosClient.get('/reports/audit-logs?limit=15')
+      ]);
+
+      // Xử lý dữ liệu biểu đồ
+      const rawRevenue = revRes.data?.data || revRes.data || [];
+      const formattedChartData = rawRevenue.map(item => ({
+        name: new Date(item.date || item.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+        value: Number(item.total || item.total_revenue || 0)
+      }));
+
+      setRevenueData(formattedChartData);
+      setAuditLogs(logRes.data?.data || logRes.data || []);
+    } catch (error) {
+      console.error("Lỗi tải báo cáo:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="p-8 text-center font-bold text-blue-600">Đang tổng hợp báo cáo...</div>;
 
   return (
-    <div className="space-y-6">
-      {/* Top Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between"><p className="text-gray-500 font-medium">Total Revenue</p><span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded">↗ 12.5%</span></div>
-          <p className="text-3xl font-bold text-gray-900 mt-2">$128,430.00</p>
-          <p className="text-xs text-gray-400 mt-1">vs. $114,160 last month</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between"><p className="text-gray-500 font-medium">Units Sold</p><span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded">↘ 2.4%</span></div>
-          <p className="text-3xl font-bold text-gray-900 mt-2">1,240</p>
-          <p className="text-xs text-gray-400 mt-1">vs. 1,271 last month</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between"><p className="text-gray-500 font-medium">Avg. Order Value</p><span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded">↗ 5.1%</span></div>
-          <p className="text-3xl font-bold text-gray-900 mt-2">$103.50</p>
-          <p className="text-xs text-gray-400 mt-1">vs. $98.45 last month</p>
-        </div>
-      </div>
+    <div className="p-8 font-sans">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Báo cáo & Thống kê</h1>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Line Chart */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Revenue Analytics</h2>
-              <p className="text-xs text-gray-500">Performance for the last 6 months</p>
-            </div>
-            <span className="text-xs font-bold bg-gray-100 px-3 py-1 rounded-lg">Last 6 Months</span>
-          </div>
-          <div className="h-64">
+        {/* KHUNG BIỂU ĐỒ DOANH THU (2 Cột) */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-6">Biểu đồ Doanh thu (Theo Ngày)</h2>
+          <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueData}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
-                <Tooltip />
-                {/* type="monotone" giúp đường cong mượt mà, strokeWidth làm đường biểu đồ đậm lên */}
-                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={4} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Bar Chart */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Category Sales</h2>
-              <p className="text-xs text-gray-500">Units sold by component type</p>
-            </div>
-            <span className="text-xs font-bold text-blue-600 uppercase">Current Month</span>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categorySales} barSize={40}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
-                <Tooltip cursor={{fill: 'transparent'}} />
-                {/* radius bo tròn 2 góc trên của cột */}
-                <Bar dataKey="value" fill="#bfdbfe" radius={[4, 4, 0, 0]} activeBar={{ fill: '#3b82f6' }} />
+              <BarChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} dy={10} />
+                <Tooltip 
+                  formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)}
+                  cursor={{fill: '#f3f4f6'}}
+                />
+                <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
               </BarChart>
             </ResponsiveContainer>
           </div>
+          {revenueData.length === 0 && <p className="text-center text-sm text-gray-400 mt-4">Chưa có dữ liệu giao dịch.</p>}
         </div>
+
+        {/* KHUNG NHẬT KÝ HỆ THỐNG (1 Cột) */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-96">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Nhật ký Hệ thống (Audit Logs)</h2>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            {auditLogs.map((log, index) => (
+              <div key={index} className="pb-3 border-b border-gray-100 last:border-0">
+                <p className="text-xs text-gray-400 mb-1">{new Date(log.created_at).toLocaleString('vi-VN')}</p>
+                <p className="text-sm font-medium text-gray-800">{log.action || log.description}</p>
+                <p className="text-[10px] text-blue-600 font-bold mt-1">Bởi: {log.user_name || log.username || 'System'}</p>
+              </div>
+            ))}
+            {auditLogs.length === 0 && <p className="text-sm text-gray-400 text-center mt-10">Không có nhật ký nào.</p>}
+          </div>
+        </div>
+
       </div>
-      
-      {/* (Bảng Best Selling Products ở dưới có cấu trúc HTML table tương tự các trang trên nên mình xin rút gọn để tập trung vào Charts) */}
     </div>
   );
 };
