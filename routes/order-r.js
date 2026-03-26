@@ -8,10 +8,17 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags:
- * name: Orders
- * description: Quản lý đơn hàng và hóa đơn
+ * /orders:
+ * get:
+ * summary: Lấy toàn bộ danh sách đơn hàng (Staff/Admin)
+ * tags: [Orders]
+ * security:
+ * - bearerAuth: []
+ * responses:
+ * 200:
+ * description: Thành công
  */
+router.get('/', protect, restrictTo('STAFF', 'ADMIN'), orderController.getAllOrders);
 
 /**
  * @swagger
@@ -28,18 +35,28 @@ const router = express.Router();
  * responses:
  * 201:
  * description: Thành công
- * 400:
- * $ref: '#/components/schemas/Error'
  */
-router.get('/', protect, restrictTo('STAFF', 'ADMIN'), orderController.getAllOrders);
-
 router.post('/', protect, validate(createOrderSchema), orderController.createOrder);
+
+/**
+ * @swagger
+ * /orders/my-orders:
+ * get:
+ * summary: Xem lịch sử mua hàng của tôi (Khách hàng)
+ * tags: [Orders]
+ * security:
+ * - bearerAuth: []
+ * responses:
+ * 200:
+ * description: Danh sách đơn hàng cá nhân
+ */
+router.get('/my-orders', protect, orderController.getMyOrders);
 
 /**
  * @swagger
  * /orders/{orderId}:
  * get:
- * summary: Lấy chi tiết đơn hàng
+ * summary: Lấy chi tiết một đơn hàng
  * tags: [Orders]
  * security:
  * - bearerAuth: []
@@ -52,39 +69,87 @@ router.post('/', protect, validate(createOrderSchema), orderController.createOrd
  * responses:
  * 200:
  * description: Thông tin chi tiết đơn hàng
- * 401:
- * description: Chưa xác thực
  */
-// ĐẶT DÒNG NÀY LÊN TRÊN CÙNG (Dưới đoạn router.post('/'))
+router.get('/:orderId', protect, orderController.getOrderDetail);
+
 /**
  * @swagger
- * /orders/my-orders:
- * get:
- * summary: Xem lịch sử mua hàng của tôi (Khách hàng)
+ * /orders/{orderId}/verify:
+ * patch:
+ * summary: Xác nhận đơn (Bán POS tại quầy) -> COMPLETED
  * tags: [Orders]
  * security:
  * - bearerAuth: []
+ * parameters:
+ * - in: path
+ * name: orderId
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Đơn hàng đã được chốt
  */
-router.get('/my-orders', protect, orderController.getMyOrders);
+router.patch('/:orderId/verify', protect, restrictTo('STAFF', 'ADMIN'), orderController.verifyOrder);
 
-router.get('/:orderId', protect, orderController.getOrderDetail);
-// Thêm dòng này vào file route của bạn
-router.patch(
-  '/:orderId/verify', 
-  protect, 
-  restrictTo('STAFF'), 
-  orderController.verifyOrder
-);
-// Thêm API Hủy đơn hàng (Member và Staff đều dùng được)
-router.patch(
-  '/:orderId/cancel', 
-  protect, 
-  orderController.cancelOrder
-);
-// API Admin duyệt đơn / Hủy đơn
-router.patch('/:orderId/status',
-    protect,
-     restrictTo('ADMIN', 'STAFF'),
-      orderController.updateOrderStatus);
-      
+/**
+ * @swagger
+ * /orders/{orderId}/cancel:
+ * patch:
+ * summary: Hủy đơn hàng (Hoàn trả tồn kho)
+ * tags: [Orders]
+ * security:
+ * - bearerAuth: []
+ * parameters:
+ * - in: path
+ * name: orderId
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Hủy đơn thành công
+ */
+router.patch('/:orderId/cancel', protect, orderController.cancelOrder);
+
+/**
+ * @swagger
+ * /orders/{orderId}/ship:
+ * patch:
+ * summary: Chuyển trạng thái sang Giao Hàng (SHIPPED)
+ * tags: [Orders]
+ * security:
+ * - bearerAuth: []
+ * parameters:
+ * - in: path
+ * name: orderId
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Cập nhật thành công
+ */
+router.patch('/:orderId/ship', protect, restrictTo('STAFF', 'ADMIN'), orderController.shipOrder);
+
+/**
+ * @swagger
+ * /orders/{orderId}/complete:
+ * patch:
+ * summary: Chốt đơn hoàn thành giao hàng (COMPLETED)
+ * tags: [Orders]
+ * security:
+ * - bearerAuth: []
+ * parameters:
+ * - in: path
+ * name: orderId
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Đơn hàng hoàn tất
+ */
+router.patch('/:orderId/complete', protect, restrictTo('STAFF', 'ADMIN'), orderController.completeOrder);
+
 export default router;

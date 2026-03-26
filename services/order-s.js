@@ -1,11 +1,22 @@
 import Order from '../models/order.js';
 import AppError from '../utils/appError.js';
+import db from '../db/db.js';
 
 export const createNewOrder = async (orderData) => {
  try {
+    // BƯỚC 2: CHẶN LOGIC REAL_STOCK TẠI ĐÂY (TRƯỚC KHI TẠO ĐƠN)
+    // Lấy số lượng thực tế trên kệ của sản phẩm
+    const stockQuery = await db.raw('SELECT f_get_real_stock(?) AS real_stock', [orderData.product_id]);
+    const realStock = stockQuery[0][0].real_stock;
+
+    // Nếu số lượng khách đặt lớn hơn hàng trên kệ -> Báo lỗi ngay lập tức
+    if (orderData.quantity > realStock) {
+       throw new AppError(`Chỉ còn ${realStock} sản phẩm trên kệ, không đủ hàng để bán!`, 400);
+    }
+
+    // Nếu đủ hàng, tiếp tục tạo đơn như bình thường
     const result = await Order.createOrder({
-      // Chỉ gửi 5 tham số cho SQL
-      userId: orderData.user_id, // ĐÃ THÊM DÒNG NÀY
+      userId: orderData.user_id, 
       name: orderData.guest_name,
       phone: orderData.guest_phone,
       address: orderData.shipping_address,
@@ -36,12 +47,11 @@ export const createNewOrder = async (orderData) => {
     };
 
   } catch (error) {
-    // SỬA TẠI ĐÂY: Bắt lỗi cứng từ MySQL (Knex) và biến nó thành lỗi 400 thân thiện
+    // Bắt lỗi cứng từ MySQL (Knex) 
     if (error.message && error.message.includes('Không đủ hàng tồn kho')) {
       throw new AppError('Không đủ hàng tồn kho để bán!', 400);
     }
     
-    // Nếu là lỗi khác, cứ ném đi tiếp để hệ thống xử lý
     throw error;
   }
 };

@@ -79,11 +79,14 @@ export const uploadImage = async (req, res, next) => {
       throw new AppError('Vui lòng chọn một file ảnh để upload!', 400);
     }
 
-    // Tạo đường dẫn URL để Frontend có thể hiển thị ảnh
-    const imageUrl = `/public/uploads/products/${req.file.filename}`;
+    const { id } = req.params; // Lấy ID sản phẩm từ URL
+    
+    // Tạo đường dẫn URL (Bỏ chữ /public đi nếu backend của bạn expose thư mục uploads)
+    const imageUrl = `public/uploads/products/${req.file.filename}`;
 
-    // Ở đây, bạn có thể gọi DB để UPDATE cột image_url trong bảng products 
-    // Còn hiện tại, mình trả về URL luôn để Frontend nhận diện:
+    // ĐÃ SỬA: LƯU ĐƯỜNG DẪN ẢNH VÀO CỘT image_url CỦA SẢN PHẨM TRONG DATABASE
+    await db('products').where('pro_id', id).update({ image_url: imageUrl });
+
     res.ok({ imageUrl }, 'Upload ảnh sản phẩm thành công!');
   } catch (err) {
     next(err);
@@ -95,7 +98,7 @@ export const uploadImage = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { pro_name, pro_sku, pro_price } = req.body;
+    const { pro_name, pro_sku, pro_price, category_id, brand_id, pro_warranty, description } = req.body;
 
     // Dùng cú pháp của Knex để UPDATE
     const updatedRows = await db('products')
@@ -103,7 +106,11 @@ export const updateProduct = async (req, res, next) => {
       .update({
         pro_name: pro_name,
         pro_sku: pro_sku,
-        pro_price: pro_price
+        pro_price: pro_price,
+        category_id: category_id, // Cập nhật danh mục
+        brand_id: brand_id,       // Cập nhật thương hiệu
+        pro_warranty: pro_warranty, // Cập nhật bảo hành
+        description: description    // Cập nhật mô tả
       });
 
     if (updatedRows === 0) {
@@ -166,4 +173,54 @@ export const deleteProduct = async (req, res, next) => {
     if (!deleted) return res.status(404).json({ status: 'fail', message: 'Không thấy SP' });
     res.status(200).json({ status: 'success', message: 'Đã xóa sản phẩm khỏi kho' });
   } catch (error) { next(error); }
+};
+
+// --- BỔ SUNG VÀO CUỐI FILE product-c.js ---
+
+export const createCategory = async (req, res, next) => {
+  try {
+    const { cat_name, description } = req.body;
+    if (!cat_name) return res.status(400).json({ status: 'error', message: 'Tên danh mục không được để trống' });
+    
+    await db('categories').insert({ cat_name, description });
+    res.status(201).json({ status: 'success', message: 'Thêm danh mục thành công' });
+  } catch (err) { next(err); }
+};
+
+export const createBrand = async (req, res, next) => {
+  try {
+    const { brand_name, brand_slug, logo_url } = req.body;
+    if (!brand_name) return res.status(400).json({ status: 'error', message: 'Tên thương hiệu không được để trống' });
+    
+    await db('brands').insert({ brand_name, brand_slug, logo_url });
+    res.status(201).json({ status: 'success', message: 'Thêm thương hiệu thành công' });
+  } catch (err) { next(err); }
+};
+
+// --- BỔ SUNG VÀO CUỐI FILE product-c.js ---
+
+export const updateCategory = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { cat_name, description } = req.body;
+    
+    await db('categories')
+      .where('category_id', id)
+      .update({ cat_name, description });
+      
+    res.status(200).json({ status: 'success', message: 'Cập nhật danh mục thành công' });
+  } catch (err) { next(err); }
+};
+
+export const updateBrand = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { brand_name, brand_slug, logo_url } = req.body;
+    
+    await db('brands')
+      .where('brand_id', id)
+      .update({ brand_name, brand_slug, logo_url });
+      
+    res.status(200).json({ status: 'success', message: 'Cập nhật thương hiệu thành công' });
+  } catch (err) { next(err); }
 };

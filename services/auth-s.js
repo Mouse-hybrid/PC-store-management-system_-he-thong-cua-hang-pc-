@@ -51,8 +51,13 @@ export const login = async (username, password) => {
   const accessToken = signToken(user.user_id);
   const refreshToken = jwt.sign({ id: user.user_id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
-  // Lưu Refresh Token để quản lý phiên
+  // --- [ĐÃ SỬA TẠI ĐÂY] ---
+  // Xóa Refresh Token cũ của user này (nếu có) trước khi tạo mới để tránh lỗi ER_DUP_ENTRY
+  await RefreshToken.deleteByUser(user.user_id); 
+  
+  // Lưu Refresh Token mới
   await RefreshToken.save(user.user_id, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+  // -----------------------
 
   return { accessToken, refreshToken, user: { id: user.user_id, username: user.username, role: user.role } };
 };

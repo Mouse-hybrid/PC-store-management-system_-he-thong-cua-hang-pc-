@@ -24,5 +24,10 @@ class Coupon {
 
     return !coupon.is_active; // Trả về trạng thái mới
   }
+
+  // Lấy danh sách tất cả mã giảm giá
+  static async findAll() {
+    return db('coupons').select('*').orderBy('id', 'desc'); // Lấy hết và sắp xếp mới nhất lên đầu
+  }
 }
 export default Coupon;

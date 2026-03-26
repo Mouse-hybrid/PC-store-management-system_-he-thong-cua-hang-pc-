@@ -1,3 +1,13 @@
+Đăng ký tài khoản
+post: https://localhost:3443/api/v1/auth/register
+{
+  "username": "mouse",
+  "email": "mouse@example.com",
+  "password": "12345678",
+  "full_name": "Khoa",
+  "phone_number": "0901234567"
+}
+
 1️⃣ Đăng nhập hệ thống (Lấy Token)
 Method: POST
 
@@ -68,3 +78,55 @@ URL: https://localhost:3443/api/v1/reviews/2
 Auth: Không cần.
 
 👉 Mục đích: Lấy danh sách hiển thị ra giao diện Website giống như kết quả bạn vừa làm thành công.
+
+1️⃣ Upload ảnh Sản phẩm
+Method: POST
+
+URL: https://localhost:3443/api/v1/products/1/images
+(Thay 1 bằng ID sản phẩm thực tế).
+
+Auth: Bearer Token (Yêu cầu quyền STAFF hoặc ADMIN).
+
+Body (form-data): Key là image, chọn file ảnh (< 2MB).
+
+👉 Mục đích: Lưu ảnh linh kiện lên server và lấy URL hiển thị ra giao diện.
+
+2️⃣ Đăng nhập hệ thống (Auth)
+Method: POST
+
+URL: https://localhost:3443/api/v1/auth/login
+
+Auth: Không cần.
+
+Body (JSON): {"email": "...", "password": "..."}.
+
+👉 Mục đích: Lấy Access Token để sử dụng cho các API yêu cầu quyền hạn phía sau.
+
+3️⃣ Tra cứu bảo hành (Inventory)
+Method: GET
+
+URL: https://localhost:3443/api/v1/inventory/warranty/SER123456 tạm
+
+Auth: Không cần.
+
+👉 Mục đích: Cho phép khách hàng nhập số Serial để kiểm tra ngày hết hạn bảo hành của linh kiện.
+
+4️⃣ Tạo đơn hàng mới (Order)
+Method: POST
+
+URL: https://localhost:3443/api/v1/orders
+
+Auth: Bearer Token (Phải đăng nhập).
+
+Body (JSON): Thông tin sản phẩm, số lượng, mã giảm giá (nếu có).
+
+👉 Mục đích: Lưu đơn hàng vào cơ sở dữ liệu và trừ tồn kho thực tế.
+
+5️⃣ Lấy danh sách Sản phẩm (Có bộ lọc)
+Method: GET
+
+URL: https://localhost:3443/api/v1/products?brand=ASUS&minPrice=1000000
+
+Auth: Không cần.
+
+👉 Mục đích: Hiển thị danh sách linh kiện trên trang chủ, hỗ trợ lọc theo hãng và khoảng giá.

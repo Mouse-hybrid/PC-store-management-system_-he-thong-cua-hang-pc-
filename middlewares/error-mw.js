@@ -1,4 +1,5 @@
 import logger from '../logging/logger.js';
+import AppError from '../utils/appError.js';
 
 const handleDbError = (err) => {
   if (err.code === 'ER_DUP_ENTRY') return new AppError('Dữ liệu đã tồn tại trong hệ thống (Trùng mã/SKU/Email)!', 400);

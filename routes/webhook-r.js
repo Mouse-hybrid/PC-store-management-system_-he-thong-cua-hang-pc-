@@ -5,7 +5,16 @@ import { paymentSchema } from '../validators/payment-schema.js';
 
 const router = express.Router();
 
-// Webhook cần Validate nghiêm ngặt để tránh giả mạo dữ liệu
+/**
+ * @swagger
+ * /webhook/callback:
+ * post:
+ * summary: Xử lý callback thanh toán từ cổng thanh toán
+ * tags: [Webhooks]
+ * responses:
+ * 200:
+ * description: Nhận webhook thành công
+ */
 router.post('/callback', validate(paymentSchema), paymentController.handlePaymentWebhook);
 
 export default router;

@@ -8,3 +8,8 @@ export const validateAndCalculateDiscount = async (totalAmount, code) => {
     finalAmount: totalAmount - parseFloat(discount)
   };
 };
+
+export const getAllCoupons = async () => {
+  const coupons = await Coupon.findAll();
+  return coupons;
+};

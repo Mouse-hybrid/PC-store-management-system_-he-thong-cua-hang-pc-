@@ -4,11 +4,30 @@ import { protect } from '../middlewares/auth-mw.js';
 
 const router = express.Router();
 
-// Lấy danh sách phương thức (COD, MOMO...)
+/**
+ * @swagger
+ * /payments/methods:
+ * get:
+ * summary: Lấy danh sách phương thức thanh toán hỗ trợ
+ * tags: [Payments]
+ * security:
+ * - bearerAuth: []
+ * responses:
+ * 200:
+ * description: Danh sách phương thức (COD, MOMO...)
+ */
 router.get('/methods', protect, getPaymentMethods);
 
-// THÊM DÒNG NÀY: API để các cổng thanh toán gọi về cập nhật trạng thái
-// Lưu ý: Webhook thường không dùng 'protect' vì nó được gọi từ server của MoMo/VNPay chứ không phải từ User
+/**
+ * @swagger
+ * /payments/webhook:
+ * post:
+ * summary: Nhận IPN Webhook từ đối tác thanh toán (MoMo/VNPay)
+ * tags: [Payments]
+ * responses:
+ * 200:
+ * description: Xác nhận đã nhận tín hiệu
+ */
 router.post('/webhook', handlePaymentWebhook);
 
 export default router;

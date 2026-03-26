@@ -8,13 +8,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags:
- * name: Auth
- * description: Xác thực người dùng và quản lý phiên (Member/Staff)
- */
-
-/**
- * @swagger
  * /auth/register:
  * post:
  * summary: Đăng ký tài khoản mới
