@@ -6,5 +6,7 @@ const router = express.Router();
 
 router.use(protect);
 router.patch('/salary', restrictTo('ADMIN'), staffController.updateStaffSalary);
+// 👉 THÊM DÒNG NÀY: API tạo Staff mới (Chỉ Admin)
+router.post('/', restrictTo('ADMIN'), staffController.createStaff);
 
 export default router;

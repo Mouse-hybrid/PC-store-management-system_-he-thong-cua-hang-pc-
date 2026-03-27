@@ -132,34 +132,25 @@ export const restockProduct = async (req, res, next) => {
     const { id } = req.params;
     const { quantity } = req.body;
     
-    // Lấy ID Admin/Staff đang đăng nhập (mặc định 1 nếu test chưa có token)
+    // Lấy ID Admin/Staff đang đăng nhập
     const staffId = req.user?.id || req.user?.staff_id || 1; 
 
     if (!quantity || quantity <= 0) {
       return res.status(400).json({ status: 'error', message: 'Số lượng không hợp lệ' });
     }
 
-    // 👉 BƯỚC MỚI: Lấy thông tin hiện tại của SP để lấy đủ 7 tham số
     const product = await db('products').where('pro_id', id).first();
     
     if (!product) {
       return res.status(404).json({ status: 'error', message: 'Không tìm thấy sản phẩm này' });
     }
 
-    // 👉 TRUYỀN ĐỦ 7 THAM SỐ VÀO PROCEDURE (Thứ tự dựa trên bảng của bạn)
-    await db.raw('CALL sp_import_product_safe(?, ?, ?, ?, ?, ?, ?)', [
-      staffId,             // ? 1 
-      id,                  // ? 2 
-      product.pro_price,   // ? 3 
-      quantity,            // ? 4 
-      product.brand_id,    // ? 5  
-      product.category_id, // ? 6 
-      product.pro_name     // ? 7 
-    ]);
+    // 👉 ĐÃ SỬA LỖI: Sử dụng .increment() để ĐẢM BẢO CỘNG DỒN vào số lượng hiện có
+    await db('products').where('pro_id', id).increment('pro_quantity', quantity);
 
     res.status(200).json({
       status: 'success',
-      message: `Admin/Staff ${staffId} đã nhập thêm ${quantity} cái cho sản phẩm ${product.pro_name}`
+      message: `Admin/Staff ${staffId} đã nhập thêm ${quantity} cái cho ${product.pro_name}`
     });
   } catch (error) {
     next(error);

@@ -43,23 +43,43 @@ export const signup = async (userData) => {
 };
 
 export const login = async (username, password) => {
-  const user = await User.findByUsername(username);
-  if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-    throw new AppError('Tên đăng nhập hoặc mật khẩu không chính xác', 401);
+  // 1. Tự động cắt bỏ khoảng trắng vô tình bị dính vào khi gõ/paste
+  const cleanUsername = username.trim();
+  const cleanPassword = password.trim();
+
+  // 2. Tìm user bằng username HOẶC email
+  const user = await db('users')
+    .where('username', cleanUsername)
+    .orWhere('email', cleanUsername)
+    .first();
+
+  // 👉 TÁCH LỖI 1: Báo cho Frontend biết nếu không tìm thấy User
+  if (!user) {
+    throw new AppError('Tài khoản hoặc Email này không tồn tại trên hệ thống!', 401);
   }
 
-  const accessToken = signToken(user.user_id);
-  const refreshToken = jwt.sign({ id: user.user_id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  // 3. Kiểm tra mật khẩu (Hỗ trợ cả bcrypt lẫn pass chưa mã hóa để phòng hờ)
+  const isBcryptMatch = await bcrypt.compare(cleanPassword, user.password_hash);
+  const isPlainMatch = cleanPassword === user.password_hash;
 
-  // --- [ĐÃ SỬA TẠI ĐÂY] ---
-  // Xóa Refresh Token cũ của user này (nếu có) trước khi tạo mới để tránh lỗi ER_DUP_ENTRY
-  await RefreshToken.deleteByUser(user.user_id); 
+  // 👉 TÁCH LỖI 2: Báo cho Frontend biết nếu tìm thấy User nhưng sai Pass
+  if (!isBcryptMatch && !isPlainMatch) {
+    throw new AppError('Mật khẩu bạn nhập không chính xác!', 401);
+  }
+
+  // 4. 👉 SỬA LỖI KHÓA CHÍNH: Lấy đúng ID dù CSDL đặt tên là 'id' hay 'user_id'
+  const userId = user.user_id || user.id; 
+
+  const accessToken = signToken(userId);
+  const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+
+  // Xóa Refresh Token cũ của user này
+  await RefreshToken.deleteByUser(userId); 
   
   // Lưu Refresh Token mới
-  await RefreshToken.save(user.user_id, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-  // -----------------------
+  await RefreshToken.save(userId, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
 
-  return { accessToken, refreshToken, user: { id: user.user_id, username: user.username, role: user.role } };
+  return { accessToken, refreshToken, user: { id: userId, username: user.username, role: user.role } };
 };
 
 // Bổ sung vào auth-s.js
