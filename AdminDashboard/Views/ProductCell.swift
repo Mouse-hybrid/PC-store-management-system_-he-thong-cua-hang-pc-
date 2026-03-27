@@ -35,7 +35,7 @@ class ProductCell: UITableViewCell {
         skuLabel.font = .systemFont(ofSize: 12)
         skuLabel.textColor = AppColors.textSec
         
-        // 👉 2. THÊM STOCK LABEL VÀO GIAO DIỆN
+        // 2. THÊM STOCK LABEL VÀO GIAO DIỆN
         container.addSubview(nameLabel)
         container.addSubview(priceLabel)
         container.addSubview(skuLabel)
@@ -57,7 +57,7 @@ class ProductCell: UITableViewCell {
             make.bottom.equalToSuperview().offset(-15)
         }
         
-        // 👉 3. ĐẶT VỊ TRÍ STOCK NẰM BÊN GÓC PHẢI DƯỚI (DƯỚI GIÁ TIỀN)
+        // 3. ĐẶT VỊ TRÍ STOCK NẰM BÊN GÓC PHẢI DƯỚI (DƯỚI GIÁ TIỀN)
         stockLabel.snp.makeConstraints { make in
             make.centerY.equalTo(skuLabel)
             make.trailing.equalToSuperview().offset(-15)

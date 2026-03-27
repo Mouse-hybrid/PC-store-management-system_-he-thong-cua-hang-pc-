@@ -236,7 +236,7 @@ class DashboardViewController: UIViewController {
         themeSwitch.isOn = self.traitCollection.userInterfaceStyle == .dark
         themeSwitch.addTarget(self, action: #selector(handleThemeChange(_:)), for: .valueChanged)
         
-        // 👉 THÊM NÚT ĐĂNG XUẤT Ở ĐÂY
+        // THÊM NÚT ĐĂNG XUẤT Ở ĐÂY
         let logoutBtn = UIButton(type: .system)
         logoutBtn.setImage(UIImage(systemName: "rectangle.portrait.and.arrow.right"), for: .normal)
         logoutBtn.tintColor = .systemRed
@@ -359,7 +359,7 @@ class DashboardViewController: UIViewController {
     @objc private func goToInventory() { navigationController?.pushViewController(InventoryViewController(), animated: true) }
     @objc private func goToCategories() { navigationController?.pushViewController(CategoryManagerViewController(), animated: true) }
     
-    // 👉 HÀM ĐƯỢC GỌI KHI BẤM VÀO TAB FINANCE
+    //HÀM ĐƯỢC GỌI KHI BẤM VÀO TAB FINANCE
     @objc private func goToFinance() { navigationController?.pushViewController(FinanceViewController(), animated: true) }
     
     @objc private func handleThemeChange(_ sender: UISwitch) { self.view.window?.overrideUserInterfaceStyle = sender.isOn ? .dark : .light }

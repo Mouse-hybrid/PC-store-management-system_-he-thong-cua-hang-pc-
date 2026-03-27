@@ -2,7 +2,7 @@
 //  StaffDashboardViewController.swift
 //  AdminDashboard
 //
-//  Created by khoa on 22/3/26.
+//  Created by Nguyen on 22/3/26.
 //
 
 import UIKit
@@ -181,7 +181,6 @@ class StaffDashboardViewController: UIViewController {
         let gridStack2 = UIStackView()
         gridStack2.axis = .horizontal; gridStack2.spacing = 15; gridStack2.distribution = .fillEqually
         
-        // Đã sử dụng thẻ View thông minh thay cho Button để dễ bắt cảm ứng
         let addProductBtn = createActionCard(title: "Add Product", icon: "plus.square.fill", action: #selector(openAddProduct))
         let ordersBtn = createActionCard(title: "Process Orders", icon: "shippingbox.fill", action: #selector(openStaffOrders))
         let inventoryBtn = createActionCard(title: "Inventory", icon: "cube.box.fill", action: #selector(openInventory))
@@ -208,7 +207,6 @@ class StaffDashboardViewController: UIViewController {
         card.layer.borderWidth = 1
         card.layer.borderColor = AppColors.textSec.withAlphaComponent(0.2).cgColor
         
-        // Bật cảm ứng cho thẻ View
         card.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: action)
         card.addGestureRecognizer(tap)
@@ -235,13 +233,6 @@ class StaffDashboardViewController: UIViewController {
         self.view.window?.overrideUserInterfaceStyle = sender.isOn ? .dark : .light
     }
     
-    @objc private func openAddProduct() {
-        // Có thể gọi AddProductViewController của Admin ra dùng chung
-        let alert = UIAlertController(title: "Add Product", message: "Mở form thêm sản phẩm", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
-    
     @objc private func openStaffOrders() {
         let orderVC = StaffOrderProcessingViewController()
         navigationController?.pushViewController(orderVC, animated: true)
@@ -261,10 +252,24 @@ class StaffDashboardViewController: UIViewController {
         navigationController?.pushViewController(inventoryVC, animated: true)
     }
     
+    // 👉 ĐÃ SỬA: Mở màn hình Thêm sản phẩm dạng trượt
+    @objc private func openAddProduct() {
+        let addVC = AddProductViewController()
+        addVC.onAddSuccess = { [weak self] in
+            self?.loadStaffData()
+        }
+        if let sheet = addVC.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(addVC, animated: true)
+    }
+    
+    // 👉 ĐÃ SỬA: Chuyển hướng sang màn hình Customer
     @objc private func openCustomers() {
-        let alert = UIAlertController(title: "Customers", message: "Tính năng Quản lý Khách hàng đang được hoàn thiện!", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        let customersVC = UserManagementViewController()
+        customersVC.isCustomerOnly = true // Bật cờ chỉ hiển thị Khách hàng
+        navigationController?.pushViewController(customersVC, animated: true)
     }
     
     @objc private func handleLogout() {
