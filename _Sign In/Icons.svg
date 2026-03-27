@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="351" height="106" viewBox="0 0 351 106">
+  <!-- Background -->
+  <rect width="351" height="106" fill="#176C99"/>
+
+  <!-- Cart icon (white) -->
+  <g transform="translate(70 30)" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- handle + basket outline -->
+    <path d="M4 8h6l5 22h21l4-16H16" />
+    <path d="M18 14h22" />
+    <!-- wheels -->
+    <circle cx="18" cy="36" r="2.6" fill="#FFFFFF" stroke="none"/>
+    <circle cx="34" cy="36" r="2.6" fill="#FFFFFF" stroke="none"/>
+  </g>
+
+  <!-- Badge -->
+  <g transform="translate(118 20)">
+    <circle cx="12" cy="12" r="12" fill="#FFFFFF"/>
+    <text x="12" y="16" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#176C99">0</text>
+  </g>
+
+  <!-- Heart icon (black) -->
+  <path
+    d="M178.5 74
+       C165 63 160 55 160 47
+       C160 40 165 35 172 35
+       C176 35 180 37 182 41
+       C184 37 188 35 192 35
+       C199 35 204 40 204 47
+       C204 55 199 63 185.5 74
+       L182 77
+       Z"
+    fill="#0B0B0B"/>
+
+  <!-- User icon (black) -->
+  <g transform="translate(258 28)" fill="#0B0B0B">
+    <circle cx="18" cy="18" r="10"/>
+    <path d="M6 52c0-9 7-16 16-16s16 7 16 16v6H6z"/>
+  </g>
+</svg>
+
