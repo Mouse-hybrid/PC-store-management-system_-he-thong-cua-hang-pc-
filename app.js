@@ -33,7 +33,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // --- BỘ LỌC TOÀN CỤC (GLOBAL MIDDLEWARES) ---
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false, // cho phép ảnh đc chia sẻ 
+}));
+
 app.use(cors({
   origin: true,
   credentials: true 

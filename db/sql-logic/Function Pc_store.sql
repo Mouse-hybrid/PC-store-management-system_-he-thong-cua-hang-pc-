@@ -4,6 +4,12 @@
    ========================================================================== */
 -- USE pc_store;
 
+/*
+Thêm bảng image cho products
+ALTER TABLE products ADD COLUMN image_url VARCHAR(255) NULL;
+*/
+
+
 DELIMITER $$
 
 -- 1. HÀM KIỂM TRA TỒN KHO THỰC TẾ
