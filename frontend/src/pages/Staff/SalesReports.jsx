@@ -12,39 +12,50 @@ export default function SalesReports() {
     fetchReportData();
   }, []);
 
-  const fetchReportData = async () => {
+  const fetchReports = async () => {
     try {
       setLoading(true);
-      // Gọi song song API Doanh thu và Đơn hàng gần đây
-      const [revenueRes, ordersRes] = await Promise.all([
-        axiosClient.get('/reports/revenue'),
-        axiosClient.get('/orders?limit=5')
+      
+      // 👉 SỬA LỖI Ở ĐÂY: Gọi API lấy đơn hàng thô thay vì gọi báo cáo doanh thu
+      const [ordersRes, logRes] = await Promise.all([
+        axiosClient.get('/orders'), // NẾU LỖI 404, bạn hãy đổi dòng này thành: axiosClient.get('/reports/recent-transactions')
+        axiosClient.get('/reports/audit-logs?limit=15')
       ]);
 
-      const rawRevenue = revenueRes.data?.data || revenueRes.data || [];
-      const recentOrders = ordersRes.data?.data || ordersRes.data || [];
+      // Lấy danh sách đơn hàng thô
+      const rawOrders = ordersRes.data?.data || ordersRes.data || [];
 
-      // 1. Tính toán các chỉ số thống kê (Stats)
-      const totalRevenue = rawRevenue.reduce((sum, item) => sum + Number(item.total || 0), 0);
-      const totalOrdersCount = recentOrders.length; // Trong thực tế nên lấy từ API count
+      // 1. Lọc chuẩn xác các đơn hàng COMPLETED
+      const completedOrders = rawOrders.filter(item => item.status === 'COMPLETED');
 
-      // 2. Định dạng dữ liệu cho Biểu đồ
-      const chartData = rawRevenue.map(item => ({
-        day: new Date(item.date || item.created_at).toLocaleDateString('vi-VN', { weekday: 'short' }),
-        value: Number(item.total || 0)
+      // 2. Gom nhóm cộng dồn tiền theo ngày
+      const dailyRevenue = {};
+      completedOrders.forEach(item => {
+        // Lấy ngày đặt hàng (Format: DD-MM)
+        const dateStr = new Date(item.created_at || item.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+        
+        // Lấy số tiền
+        const amount = Number(item.final_amount || item.total_price || item.total || item.total_revenue || 0);
+        
+        // Cộng dồn
+        dailyRevenue[dateStr] = (dailyRevenue[dateStr] || 0) + amount;
+      });
+
+      // 3. Ép kiểu về mảng cho BarChart Recharts
+      const formattedChartData = Object.keys(dailyRevenue).map(date => ({
+        name: date,
+        value: dailyRevenue[date]
       }));
 
-      setReportData({
-        stats: {
-          revenue: totalRevenue,
-          sales: totalOrdersCount,
-          avgOrder: totalOrdersCount > 0 ? (totalRevenue / totalOrdersCount) : 0,
-        },
-        chartData: chartData,
-        recentSales: recentOrders.slice(0, 5) // Lấy 5 đơn mới nhất
-      });
+      // Sắp xếp ngày từ cũ đến mới để biểu đồ đi từ trái qua phải
+      formattedChartData.sort((a, b) => a.name.localeCompare(b.name));
+
+      // Cập nhật State
+      setRevenueData(formattedChartData);
+      setAuditLogs(logRes.data?.data || logRes.data || []);
+      
     } catch (error) {
-      console.error("Lỗi tải báo cáo doanh thu:", error);
+      console.error("Lỗi tải báo cáo:", error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +84,7 @@ export default function SalesReports() {
           </h2>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <p className="text-sm font-semibold text-gray-500 mb-1 uppercase">Số đơn đã xử lý</p>
+          <p className="text-sm font-semibold text-gray-500 mb-1 uppercase">Số đơn đã hoàn thành</p>
           <h2 className="text-2xl font-bold text-gray-800">{reportData.stats.sales} Đơn</h2>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -86,7 +97,7 @@ export default function SalesReports() {
 
       {/* --- REVENUE CHART --- */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h3 className="font-bold text-gray-800 mb-6">Biểu đồ tăng trưởng doanh thu</h3>
+        <h3 className="font-bold text-gray-800 mb-6">Biểu đồ tăng trưởng doanh thu (Từ Đơn Hoàn Thành)</h3>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={reportData.chartData}>
@@ -125,13 +136,14 @@ export default function SalesReports() {
                 <td className="p-4 text-gray-500">{new Date(sale.created_at).toLocaleDateString('vi-VN')}</td>
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${
-                    sale.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-yellow-700'
+                    sale.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' : 
+                    sale.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
                     {sale.status}
                   </span>
                 </td>
                 <td className="p-4 pr-6 text-right font-bold text-gray-900">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sale.final_amount)}
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sale.final_amount || sale.total_price)}
                 </td>
               </tr>
             ))}

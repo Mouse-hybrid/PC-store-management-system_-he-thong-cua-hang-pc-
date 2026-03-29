@@ -44,12 +44,34 @@ const AdminDashboard = () => {
           { title: 'Refunded', value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finance.totalRefunds), change: '-2.1%', isPositive: false, icon: '🔙' },
         ]);
 
-        // 3. Xử lý dữ liệu Biểu đồ Doanh thu (Ánh xạ từ Backend sang Recharts)
-        // Giả sử backend trả về mảng [{ date: '2024-03-26', total: 5000000 }, ...]
-        const chartMapped = (revenueRes.data || []).map(item => ({
-          name: new Date(item.date).toLocaleDateString('vi-VN', { weekday: 'short' }).toUpperCase(),
-          value: Number(item.total)
+        // 3. XỬ LÝ BIỂU ĐỒ DOANH THU: Lọc COMPLETED và gom nhóm theo ngày
+        // Lấy danh sách giao dịch từ API (sử dụng transactionsRes hoặc gọi thêm API lấy toàn bộ order)
+        const allTransactions = transactionsRes.data || [];
+        
+        // Chỉ lấy những đơn hàng đã giao thành công
+        const completedOrders = allTransactions.filter(order => order.status === 'COMPLETED');
+
+        const dailyRevenue = {};
+        completedOrders.forEach(order => {
+          // Chuyển đổi ngày thành định dạng (VD: 24/03)
+          const dateStr = new Date(order.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+          
+          if (!dailyRevenue[dateStr]) {
+            dailyRevenue[dateStr] = 0;
+          }
+          // Cộng dồn tiền của các đơn trong cùng 1 ngày
+          dailyRevenue[dateStr] += Number(order.final_amount || order.total_price || 0);
+        });
+
+        // Chuyển đổi Object thành Mảng chuẩn của Recharts
+        const chartMapped = Object.keys(dailyRevenue).map(date => ({
+          name: date,
+          value: dailyRevenue[date]
         }));
+        
+        // Sắp xếp lại theo ngày (tùy chọn)
+        chartMapped.sort((a, b) => a.name.localeCompare(b.name));
+
         setRevenueChartData(chartMapped);
 
         // 4. Xử lý danh sách Đơn hàng gần nhất

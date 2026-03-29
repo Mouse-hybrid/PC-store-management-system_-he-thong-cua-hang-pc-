@@ -15,20 +15,45 @@ const SalesReports = () => {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const [revRes, logRes] = await Promise.all([
-        axiosClient.get('/reports/revenue'),
+      
+      // 👉 SỬA LỖI Ở ĐÂY: Gọi API lấy đơn hàng thô thay vì gọi báo cáo doanh thu
+      const [ordersRes, logRes] = await Promise.all([
+        axiosClient.get('/orders'), // NẾU LỖI 404, bạn hãy đổi dòng này thành: axiosClient.get('/reports/recent-transactions')
         axiosClient.get('/reports/audit-logs?limit=15')
       ]);
 
-      // Xử lý dữ liệu biểu đồ
-      const rawRevenue = revRes.data?.data || revRes.data || [];
-      const formattedChartData = rawRevenue.map(item => ({
-        name: new Date(item.date || item.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-        value: Number(item.total || item.total_revenue || 0)
+      // Lấy danh sách đơn hàng thô
+      const rawOrders = ordersRes.data?.data || ordersRes.data || [];
+
+      // 1. Lọc chuẩn xác các đơn hàng COMPLETED
+      const completedOrders = rawOrders.filter(item => item.status === 'COMPLETED');
+
+      // 2. Gom nhóm cộng dồn tiền theo ngày
+      const dailyRevenue = {};
+      completedOrders.forEach(item => {
+        // Lấy ngày đặt hàng (Format: DD-MM)
+        const dateStr = new Date(item.created_at || item.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+        
+        // Lấy số tiền
+        const amount = Number(item.final_amount || item.total_price || item.total || item.total_revenue || 0);
+        
+        // Cộng dồn
+        dailyRevenue[dateStr] = (dailyRevenue[dateStr] || 0) + amount;
+      });
+
+      // 3. Ép kiểu về mảng cho BarChart Recharts
+      const formattedChartData = Object.keys(dailyRevenue).map(date => ({
+        name: date,
+        value: dailyRevenue[date]
       }));
 
+      // Sắp xếp ngày từ cũ đến mới để biểu đồ đi từ trái qua phải
+      formattedChartData.sort((a, b) => a.name.localeCompare(b.name));
+
+      // Cập nhật State
       setRevenueData(formattedChartData);
       setAuditLogs(logRes.data?.data || logRes.data || []);
+      
     } catch (error) {
       console.error("Lỗi tải báo cáo:", error);
     } finally {
