@@ -1,0 +1,10 @@
+/* Login Screen */
+"login_title" = "PC Store Admin";
+"login_subtitle" = "Sign in to manage the system";
+"login_username_placeholder" = "Username";
+"login_password_placeholder" = "Password";
+"login_button" = "LOGIN";
+"login_processing" = "Processing...";
+"login_empty_error" = "Please enter all fields";
+"login_alert_title" = "Notice";
+"login_connect_error" = "Connection error";

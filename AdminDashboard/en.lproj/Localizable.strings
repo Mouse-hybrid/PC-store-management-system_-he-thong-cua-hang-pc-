@@ -1,0 +1,11 @@
+
+/* Màn hình Đăng nhập */
+"login_title" = "PC Store Admin";
+"login_subtitle" = "Đăng nhập để quản lý hệ thống";
+"login_username_placeholder" = "Username";
+"login_password_placeholder" = "Mật khẩu";
+"login_button" = "ĐĂNG NHẬP";
+"login_processing" = "Đang xử lý...";
+"login_empty_error" = "Vui lòng nhập đầy đủ thông tin";
+"login_alert_title" = "Thông báo";
+"login_connect_error" = "Lỗi kết nối";
