@@ -100,7 +100,7 @@ export default function Warranty() {
               <div className="space-y-4">
                 <div className="flex justify-between text-sm font-medium">
                   <span className="text-gray-500">Ngày hết hạn dự kiến:</span>
-                  <span className="text-gray-900 font-bold">{new Date(warrantyInfo.expiry_date).toLocaleDateString('vi-VN')}</span>
+                  <span className="text-gray-900 font-bold">{warrantyInfo.expiry_date ? new Date(warrantyInfo.expiry_date).toLocaleDateString('vi-VN') : 'N/A'}</span>
                 </div>
                 <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-600 rounded-full" style={{ width: '70%' }}></div>
@@ -115,7 +115,7 @@ export default function Warranty() {
             <div className="space-y-4 text-sm">
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-gray-400" />
-                <p>Ngày mua: {new Date(warrantyInfo.purchase_date).toLocaleDateString('vi-VN')}</p>
+                <p>Ngày mua: {warrantyInfo.purchase_date ? new Date(warrantyInfo.purchase_date).toLocaleDateString('vi-VN') : 'N/A'}</p>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-gray-400" />

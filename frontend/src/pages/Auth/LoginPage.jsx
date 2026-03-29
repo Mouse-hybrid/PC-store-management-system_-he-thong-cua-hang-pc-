@@ -1,181 +1,151 @@
 // src/pages/Auth/LoginPage.jsx
 import React, { useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 
-const LoginPage = () => {
-  const navigate = useNavigate();
-  const { setUser } = useAuth();
-  const [serverError, setServerError] = useState('');
-  
-  // 1. THÊM STATE ĐỂ QUẢN LÝ ẨN/HIỆN MẬT KHẨU
+export default function LoginPage() {
+  // --- STATE MANAGEMENT ---
+  const [usernameOrEmail, setUsernameOrEmail] = useState(''); 
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const validationSchema = Yup.object({
-    username: Yup.string().required('Username or email is required'),
-    password: Yup.string().required('Password is required'),
-  });
+  // --- LOGIC XỬ LÝ ĐĂNG NHẬP API ---
+  const handleSignIn = async (e) => {
+    e.preventDefault(); 
+    setError(null);
 
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-      rememberMe: false,
-    },
-    validationSchema: validationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
-      setServerError('');
+    if (!usernameOrEmail || !password) {
+      setError('Vui lòng nhập đầy đủ Email/Username và Mật khẩu.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
       
-      try {
-        const response = await axiosClient.post('/auth/login', {
-          username: values.username, 
-          password: values.password
-        });
+      // Gọi API Đăng nhập
+      const res = await axiosClient.post('/auth/login', {
+        username: usernameOrEmail.trim(), 
+        password: password.trim()
+      });
 
-        // 1. IN RA ĐỂ KIỂM TRA TẬN MẮT (Mở F12 -> Console để xem)
-        console.log("📦 DỮ LIỆU BACKEND GỬI VỀ:", response);
+      // Bóc tách Token và Dữ liệu user từ response
+      // (Vì axiosClient interceptor đã bọc data, nên ta lấy res.data hoặc res trực tiếp)
+      const token = res.data?.accessToken || res.accessToken;
+      const userRole = res.data?.user?.role || res.user?.role || 'STAFF';
 
-        // 2. LƯỚI QUÉT TOKEN Ở MỌI TẦNG DỮ LIỆU
-        // Dù Backend có bọc bao nhiêu lớp data đi nữa, mã này sẽ tìm ra
-        const token = response?.accessToken 
-                   || response?.data?.accessToken 
-                   || response?.data?.data?.accessToken;
-
-        const loggedInUser = response?.user 
-                          || response?.data?.user 
-                          || response?.data?.data?.user;
-
-        if (!token) {
-          throw new Error("Vẫn chưa tìm thấy Token! Hãy mở F12, chụp dòng '📦 DỮ LIỆU BACKEND GỬI VỀ' gửi cho mình xem nhé.");
-        }
-
-        // 3. LƯU VÀO LOCAL STORAGE
+      if (token) {
+        // 1. LƯU TOKEN VÀO BỘ NHỚ TRÌNH DUYỆT
         localStorage.setItem('access_token', token);
-        localStorage.setItem('user_info', JSON.stringify(loggedInUser));
 
-        // 4. CẬP NHẬT CONTEXT & CHUYỂN HƯỚNG
-        setUser(loggedInUser);
-
-        const userRole = loggedInUser?.role?.toUpperCase() || 'MEMBER';
-        if (userRole === 'ADMIN') {
-          navigate('/admin');
-        } else if (userRole === 'STAFF') {
-          navigate('/staff');
+        // 2. ĐIỀU HƯỚNG VÀO ĐÚNG DASHBOARD THEO QUYỀN
+        if (userRole.toUpperCase() === 'ADMIN') {
+          window.location.href = '/admin/dashboard';
         } else {
-          navigate('/'); 
+          window.location.href = '/staff/dashboard';
         }
-
-      } catch (error) {
-        console.error('Login Failed:', error);
-        
-        // Cải thiện logic bắt lỗi để lấy đúng thông báo từ Zod hoặc Server
-        let errorMsg = 'Đăng nhập thất bại. Không thể kết nối tới Server.';
-        if (error.response?.data?.message) {
-           errorMsg = error.response.data.message;
-        } else if (error.message) {
-           errorMsg = error.message;
-        }
-        
-        setServerError(errorMsg);
-      } finally {
-        setSubmitting(false);
+      } else {
+        setError('Lỗi hệ thống: Không nhận được Token phân quyền!');
       }
-    },
-  });
+      
+    } catch (err) {
+      // Hiển thị đúng lỗi từ Backend (Ví dụ: "Tài khoản không tồn tại" hoặc "Sai mật khẩu")
+      setError(err.response?.data?.message || 'Tên đăng nhập hoặc mật khẩu không chính xác');
+      setPassword(''); 
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center font-sans">
-      <div className="w-full max-w-lg">
-        {/* Logo và Header */}
-        <div className="flex flex-col items-center mb-10">
-          <div className="text-teal-600 mb-2">
-            <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 19h2a2 2 0 002-2V7a2 2 0 00-2-2h-2V3a2 2 0 00-2-2H7a2 2 0 00-2 2v2H3a2 2 0 00-2 2v10a2 2 0 002 2h2v2a2 2 0 002 2h10a2 2 0 002-2v-2zm-12 0H5V7h14v10h-2v1H7v-1zm10-14V3H7v2h10z"/></svg>
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-gray-50 font-sans">
+      <div className="w-full max-w-md flex flex-col items-center">
+        
+        {/* --- LOGO & HEADER --- */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 bg-teal-600 rounded-xl flex items-center justify-center mb-3 shadow-sm">
+            <div className="w-7 h-7 bg-gray-50 rounded-sm"></div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">PC STORE</h1>
-          <p className="text-gray-500 text-sm">ADMIN & STAFF PORTAL</p>
+          <h1 className="font-bold text-gray-900 text-xl tracking-wide">PC STORE</h1>
+          <p className="text-[11px] text-gray-500 uppercase tracking-widest mt-1">ADMIN & STAFF PORTAL</p>
         </div>
 
-        {/* Khung Login Form */}
-        <form onSubmit={formik.handleSubmit} className="bg-white p-10 rounded-2xl shadow-lg">
-          <h2 className="text-3xl font-bold text-gray-950 mb-3 text-center">Welcome Back</h2>
-          <p className="text-gray-500 mb-8 text-center text-sm font-medium">Please sign in to continue.</p>
+        {/* --- FORM CARD --- */}
+        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 w-full animate-in fade-in slide-in-from-bottom-4">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Welcome Back</h2>
+          <p className="text-sm text-gray-500 text-center mb-8">Please sign in to continue.</p>
 
-          {serverError && (
-            <div className="mb-6 p-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium text-center">
-              {serverError}
+          {/* Hiển thị lỗi */}
+          {error && (
+            <div className="bg-red-50 border border-red-100 text-red-500 p-3.5 rounded-lg text-center text-sm font-medium mb-6">
+              {error}
             </div>
           )}
 
-          {/* Username Field */}
-          <div className="mb-5">
-            <label className="block text-gray-900 font-bold mb-2">Email Address</label>
-            <input
-              type="text"
-              name="username"
-              placeholder="admin@pcstore.com"
-              className={`w-full p-3 border ${formik.touched.username && formik.errors.username ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400`}
-              value={formik.values.username}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            {formik.touched.username && formik.errors.username ? (
-              <div className="text-red-500 text-xs mt-1 font-medium">{formik.errors.username}</div>
-            ) : null}
-          </div>
+          <form onSubmit={handleSignIn} className="space-y-5">
+            {/* Input Email / Username */}
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Email / Username</label>
+              <input 
+                type="text" 
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                placeholder="admin@pcstore.com"
+                className="w-full bg-[#f4f7fb] border border-transparent rounded-lg px-4 py-3 text-sm font-medium text-gray-800 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none transition-all"
+              />
+            </div>
 
-          {/* Password Field */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-gray-900 font-bold">Password</label>
-              {/* 3. NÚT TOGGLE ẨN/HIỆN MẬT KHẨU */}
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-sm text-teal-600 hover:text-teal-700 font-medium"
-              >
-                {showPassword ? 'hide password' : 'show password'}
+            {/* Input Password */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-bold text-gray-900">Password</label>
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-xs font-bold text-teal-600 hover:text-teal-700 transition-colors"
+                >
+                  {showPassword ? 'hide password' : 'show password'}
+                </button>
+              </div>
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-[#f4f7fb] border border-transparent rounded-lg px-4 py-3 text-sm font-medium text-gray-800 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none transition-all tracking-wider placeholder:tracking-normal"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <label className="flex items-center text-sm text-gray-600 cursor-pointer group">
+                <input type="checkbox" className="mr-2 w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer" />
+                <span className="group-hover:text-gray-800 transition-colors">Remember Me</span>
+              </label>
+              <button type="button" className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors">
+                Forgot Password?
               </button>
             </div>
-            {/* 4. CHUYỂN TYPE CỦA INPUT DỰA VÀO STATE */}
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="••••••••"
-              className={`w-full p-3 border ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400`}
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            {formik.touched.password && formik.errors.password ? (
-              <div className="text-red-500 text-xs mt-1 font-medium">{formik.errors.password}</div>
-            ) : null}
-          </div>
 
-          {/* Remember Me & Forgot Password */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
-              <input type="checkbox" name="rememberMe" className="mr-2 rounded text-teal-600 focus:ring-teal-500" />
-              <label className="text-sm text-gray-700 font-medium">Remember Me</label>
+            <div className="pt-4">
+              <button 
+                type="submit"
+                disabled={isLoading}
+                className={`w-full bg-teal-600 text-white font-bold py-3.5 rounded-lg hover:bg-teal-700 transition-all shadow-sm flex items-center justify-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
+                {isLoading ? 'Signing in...' : 'Login'}
+              </button>
             </div>
-            <a href="#" className="text-sm text-teal-600 hover:text-teal-700 font-medium">Forgot Password?</a>
+          </form>
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">
+              Don't have an account? <button type="button" className="font-bold text-gray-800 hover:text-teal-600 transition-colors ml-1">Contact Admin.</button>
+            </p>
           </div>
-
-          <button
-            type="submit"
-            disabled={formik.isSubmitting}
-            className={`w-full bg-teal-600 text-white p-3.5 rounded-lg font-bold hover:bg-teal-700 transition-colors mb-4 ${formik.isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-          >
-            {formik.isSubmitting ? 'Logging in...' : 'Login'}
-          </button>
-
-          <p className="text-center text-sm text-gray-600 font-medium">Don't have an account? Contact Admin.</p>
-        </form>
+        </div>
       </div>
     </div>
   );
-};
-
-export default LoginPage;
+}

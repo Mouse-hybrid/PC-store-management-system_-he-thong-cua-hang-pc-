@@ -7,6 +7,7 @@ const axiosClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true
   // credentials: true // (Mở ra nếu backend của bạn có dùng Cookie)
 });
 
