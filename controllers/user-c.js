@@ -1,6 +1,7 @@
 import User from '../models/user.js';
 import AppError from '../utils/appError.js';
 import db from '../db/db.js';
+import bcrypt from 'bcryptjs';
 
 export const getMyProfile = async (req, res, next) => {
   try {
@@ -121,5 +122,60 @@ export const updateMyProfile = async (req, res, next) => {
     });
   } catch (error) { 
     next(error); 
+  }
+};
+
+// ==========================================
+// ĐỔI MẬT KHẨU (Dùng chung cho Admin/Staff/Member)
+// ==========================================
+export const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.user.id || req.user.user_id; 
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp đầy đủ thông tin!' });
+    }
+
+    const user = await db('users').where('user_id', userId).first();
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'Không tìm thấy người dùng!' });
+    }
+
+    // 👉 1. ĐÃ SỬA: Lấy đúng cột chứa mật khẩu (Tự động nhận diện password hoặc password_hash)
+    const dbPassword = user.password_hash || user.password;
+    
+    if (!dbPassword) {
+      return res.status(500).json({ 
+        status: 'error', 
+        message: 'Lỗi hệ thống: Không tìm thấy trường lưu mật khẩu trong DB. Vui lòng kiểm tra lại tên cột!' 
+      });
+    }
+
+    // 👉 2. So sánh mật khẩu (Sẽ không bao giờ bị lỗi undefined nữa)
+    const isMatch = await bcrypt.compare(oldPassword, dbPassword);
+    
+    if (!isMatch) {
+      return res.status(400).json({ status: 'error', message: 'Mật khẩu hiện tại không chính xác!' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    // 👉 3. ĐÃ SỬA: Lưu mật khẩu mới vào đúng cột (Tùy chỉnh theo tên cột thực tế)
+    // NẾU CỘT TRONG DB CỦA BẠN TÊN LÀ 'password_hash' THÌ GIỮ NGUYÊN ĐOẠN NÀY:
+    await db('users')
+      .where('user_id', userId)
+      .update({
+        password_hash: hashedNewPassword // Đổi thành 'password: hashedNewPassword' nếu DB dùng tên 'password'
+      });
+
+    res.status(200).json({ 
+      status: 'success', 
+      message: 'Mật khẩu của bạn đã được thay đổi thành công!' 
+    });
+
+  } catch (error) {
+    next(error);
   }
 };
