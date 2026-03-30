@@ -215,3 +215,23 @@ export const updateBrand = async (req, res, next) => {
     res.status(200).json({ status: 'success', message: 'Cập nhật thương hiệu thành công' });
   } catch (err) { next(err); }
 };
+
+// Lấy danh sách Thương hiệu (Brands) dựa theo ID Danh mục (Category)
+export const getBrandsByCategory = async (req, res, next) => {
+  try {
+    const { id } = req.params; // Lấy ID của category từ URL
+
+    // Dùng Knex JOIN bảng brands và products, dùng distinct để không bị trùng lặp hãng
+    const brands = await db('brands')
+      .distinct('brands.*') // Chỉ lấy thông tin của bảng brands, không lấy trùng
+      .join('products', 'brands.brand_id', 'products.brand_id') // Nối với bảng products
+      .where('products.category_id', id); // Lọc theo category_id
+
+    res.list(brands, { 
+      count: brands.length, 
+      message: `Lấy danh sách thương hiệu cho danh mục ${id} thành công` 
+    });
+  } catch (err) {
+    next(err);
+  }
+};

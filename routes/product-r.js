@@ -113,6 +113,7 @@ router.post('/:id/images', protect, restrictTo('STAFF', 'ADMIN'), uploadProductI
  * description: Thành công
  */
 router.get('/catalog/categories', productController.getAllCategories);
+router.get('/catalog/categories/:id/brands', productController.getBrandsByCategory);
 router.post('/catalog/categories', protect, restrictTo('STAFF', 'ADMIN'), productController.createCategory); // DÒNG MỚI THÊM
 router.put('/catalog/categories/:id', protect, restrictTo('STAFF', 'ADMIN'), productController.updateCategory);
 /**
