@@ -25,8 +25,6 @@ import SalesReports from '../pages/Admin/SalesReports';
 import StaffPortal from '../pages/Staff/StaffPortal';
 import Orders from '../pages/Staff/Orders';
 import Settings from '../pages/Staff/Settings';
-
-// 👉 ĐÃ SỬA: XÓA CÁC COMPONENT GIẢ VÀ IMPORT FILE THẬT
 import Inventory from '../pages/Staff/Inventory';
 import Warranty from '../pages/Staff/Warranty';
 import Customers from '../pages/Staff/Customers';
@@ -34,6 +32,9 @@ import Customers from '../pages/Staff/Customers';
 const AppRouter = () => {
   return (
     <Routes>
+      {/* 👉 CÚ CHỐT: Tự động chuyển hướng trang chủ (/) sang trang Đăng nhập (/login) */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       {/* 🔴 1. PUBLIC ROUTE */}
       <Route path="/login" element={<LoginPage />} />
 
@@ -67,12 +68,7 @@ const AppRouter = () => {
         </Route>
       </Route>
 
-      {/* 🟡 4. CUSTOMER ROUTE */}
-      <Route element={<ProtectedRoute allowedRoles={['MEMBER']} />}>
-         <Route path="/" element={<div className="p-10 text-xl font-bold text-center">Trang chủ E-commerce cho Khách hàng</div>} />
-      </Route>
-
-      {/* 🟣 5. FALLBACK ROUTE (404) */}
+      {/* 🟣 4. FALLBACK ROUTE (404) */}
       <Route path="*" element={
         <div className="h-screen flex items-center justify-center flex-col gap-4">
           <h1 className="text-4xl font-bold text-gray-800">404 - Không tìm thấy trang</h1>
