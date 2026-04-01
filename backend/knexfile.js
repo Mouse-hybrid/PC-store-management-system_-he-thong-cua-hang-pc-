@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-<<<<<<< HEAD
 const shared = {
   migrations: { directory: './db/migrations' },
   seeds: { directory: './db/seeds' },
@@ -22,23 +21,5 @@ module.exports = {
           database: process.env.DB_NAME,
         },
     ...shared,
-=======
-module.exports = {
-  development: {
-    client: 'pg',
-    connection: {
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-    },
-    migrations: {
-      directory: './db/migrations',
-    },
-    seeds: {
-      directory: './db/seeds',
-    },
->>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
   },
 };

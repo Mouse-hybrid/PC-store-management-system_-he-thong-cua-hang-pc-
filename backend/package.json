@@ -26,11 +26,8 @@
     "pg": "^8.20.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
-<<<<<<< HEAD
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
-=======
->>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
   }
 }
