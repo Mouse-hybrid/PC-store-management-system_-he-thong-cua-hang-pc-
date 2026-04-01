@@ -86,31 +86,35 @@ const swaggerOptions = {
           summary: 'Đăng ký tài khoản',
           tags: ['Authentication'],
           requestBody: {
+            required: true,
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
                     username: { type: 'string' },
+                    full_name: { type: 'string' },
                     email: { type: 'string' },
                     password: { type: 'string' },
-                    full_name: { type: 'string' },
                   },
+                  required: ['username', 'email', 'password'],
                 },
               },
             },
           },
           responses: {
-            '201': { description: 'Thành công' },
-            '400': { description: 'Lỗi' },
+            '201': { description: 'Đăng ký thành công' },
+            '400': { description: 'Dữ liệu không hợp lệ' },
           },
         },
       },
+
       '/api/auth/login': {
         post: {
           summary: 'Đăng nhập',
           tags: ['Authentication'],
           requestBody: {
+            required: true,
             content: {
               'application/json': {
                 schema: {
@@ -119,44 +123,106 @@ const swaggerOptions = {
                     email: { type: 'string' },
                     password: { type: 'string' },
                   },
+                  required: ['email', 'password'],
                 },
               },
             },
           },
           responses: {
-            '200': { description: 'Thành công' },
-            '401': { description: 'Lỗi' },
+            '200': { description: 'Đăng nhập thành công' },
+            '401': { description: 'Sai thông tin đăng nhập' },
           },
         },
       },
+
       '/api/auth/me': {
         get: {
-          summary: 'Lấy thông tin cá nhân',
+          summary: 'Lấy thông tin người dùng hiện tại',
           tags: ['Authentication'],
           security: [{ bearerAuth: [] }],
           responses: {
             '200': { description: 'Thành công' },
-            '401': { description: 'Chưa xác thực' },
+            '401': { description: 'Thiếu token' },
           },
         },
       },
-      '/api/auth/users': {
+
+      '/api/auth/search': {
         get: {
-          summary: 'Lấy danh sách người dùng',
+          summary: 'Tìm kiếm người dùng',
           tags: ['Authentication'],
           security: [{ bearerAuth: [] }],
+          parameters: [
+            { in: 'query', name: 'keyword', schema: { type: 'string' } },
+            { in: 'query', name: 'page', schema: { type: 'integer', example: 1 } },
+            { in: 'query', name: 'limit', schema: { type: 'integer', example: 10 } },
+          ],
           responses: {
-            '200': { description: 'Thành công' },
-            '403': { description: 'Từ chối truy cập' },
+            '200': { description: 'Danh sách người dùng' },
           },
         },
       },
+
+      '/api/auth/update-profile': {
+        put: {
+          summary: 'Cập nhật hồ sơ cá nhân',
+          tags: ['Authentication'],
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    username: { type: 'string' },
+                    full_name: { type: 'string' },
+                    email: { type: 'string' },
+                  },
+                  required: ['username', 'full_name', 'email'],
+                },
+              },
+            },
+          },
+          responses: {
+            '200': { description: 'Cập nhật thành công' },
+          },
+        },
+      },
+
+      '/api/auth/change-password': {
+        put: {
+          summary: 'Đổi mật khẩu',
+          tags: ['Authentication'],
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    oldPassword: { type: 'string' },
+                    newPassword: { type: 'string' },
+                  },
+                  required: ['oldPassword', 'newPassword'],
+                },
+              },
+            },
+          },
+          responses: {
+            '200': { description: 'Đổi mật khẩu thành công' },
+          },
+        },
+      },
+
       '/api/auth/upload-avatar': {
         post: {
           summary: 'Tải ảnh đại diện',
           tags: ['Authentication'],
           security: [{ bearerAuth: [] }],
           requestBody: {
+            required: true,
             content: {
               'multipart/form-data': {
                 schema: {
@@ -167,21 +233,68 @@ const swaggerOptions = {
                       format: 'binary',
                     },
                   },
+                  required: ['avatar'],
                 },
               },
             },
           },
           responses: {
-            '200': { description: 'Thành công' },
+            '200': { description: 'Upload thành công' },
           },
         },
       },
+
+      '/api/auth/users': {
+        get: {
+          summary: 'Lấy danh sách người dùng (Admin)',
+          tags: ['Admin'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Thành công' },
+            '403': { description: 'Không có quyền' },
+          },
+        },
+      },
+
+      '/api/auth/stats': {
+        get: {
+          summary: 'Lấy thống kê tổng quan (Admin)',
+          tags: ['Admin'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Thành công' },
+            '403': { description: 'Không có quyền' },
+          },
+        },
+      },
+
+      '/api/auth/users/{id}': {
+        delete: {
+          summary: 'Xóa người dùng (Admin)',
+          tags: ['Admin'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Xóa thành công' },
+            '403': { description: 'Không có quyền' },
+          },
+        },
+      },
+
       '/api/game/save': {
         post: {
-          summary: 'Lưu game',
+          summary: 'Lưu trạng thái game',
           tags: ['Game'],
           security: [{ bearerAuth: [] }],
           requestBody: {
+            required: true,
             content: {
               'application/json': {
                 schema: {
@@ -191,18 +304,40 @@ const swaggerOptions = {
                     boardState: { type: 'object' },
                     isPlayerTurn: { type: 'boolean' },
                   },
+                  required: ['gameSlug'],
                 },
               },
             },
           },
           responses: {
-            '200': { description: 'Thành công' },
+            '200': { description: 'Lưu thành công' },
           },
         },
       },
+
       '/api/game/load/{slug}': {
         get: {
-          summary: 'Tải game',
+          summary: 'Tải trạng thái game',
+          tags: ['Game'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'slug',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Tải thành công' },
+            '404': { description: 'Không tìm thấy save' },
+          },
+        },
+      },
+
+      '/api/game/{slug}/help': {
+        get: {
+          summary: 'Lấy hướng dẫn game',
           tags: ['Game'],
           security: [{ bearerAuth: [] }],
           parameters: [
@@ -215,7 +350,343 @@ const swaggerOptions = {
           ],
           responses: {
             '200': { description: 'Thành công' },
-            '404': { description: 'Không tìm thấy' },
+          },
+        },
+      },
+
+      '/api/game/{slug}/score': {
+        post: {
+          summary: 'Lưu điểm game',
+          tags: ['Game'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'slug',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    score: { type: 'integer' },
+                    play_time_seconds: { type: 'integer' },
+                  },
+                  required: ['score', 'play_time_seconds'],
+                },
+              },
+            },
+          },
+          responses: {
+            '201': { description: 'Lưu điểm thành công' },
+          },
+        },
+      },
+
+      '/api/game/{slug}/reviews': {
+        get: {
+          summary: 'Lấy danh sách đánh giá game',
+          tags: ['Game'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'slug',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+        post: {
+          summary: 'Gửi đánh giá game',
+          tags: ['Game'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'slug',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    rating: { type: 'integer', minimum: 1, maximum: 5 },
+                    comment: { type: 'string' },
+                  },
+                  required: ['rating'],
+                },
+              },
+            },
+          },
+          responses: {
+            '201': { description: 'Gửi đánh giá thành công' },
+          },
+        },
+      },
+
+      '/api/friends': {
+        get: {
+          summary: 'Lấy danh sách bạn bè',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+      },
+
+      '/api/friends/requests': {
+        get: {
+          summary: 'Lấy danh sách lời mời kết bạn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+      },
+
+      '/api/friends/request': {
+        post: {
+          summary: 'Gửi lời mời kết bạn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    receiver_id: { type: 'integer' },
+                  },
+                  required: ['receiver_id'],
+                },
+              },
+            },
+          },
+          responses: {
+            '201': { description: 'Gửi lời mời thành công' },
+          },
+        },
+      },
+
+      '/api/friends/request/{id}/accept': {
+        put: {
+          summary: 'Chấp nhận lời mời kết bạn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Chấp nhận thành công' },
+          },
+        },
+      },
+
+      '/api/friends/request/{id}/reject': {
+        put: {
+          summary: 'Từ chối lời mời kết bạn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Từ chối thành công' },
+          },
+        },
+      },
+
+      '/api/friends/{friendId}': {
+        delete: {
+          summary: 'Hủy kết bạn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'friendId',
+              required: true,
+              schema: { type: 'integer' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Hủy kết bạn thành công' },
+          },
+        },
+      },
+
+      '/api/messages/{friendId}': {
+        get: {
+          summary: 'Lấy hội thoại với một người bạn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'friendId',
+              required: true,
+              schema: { type: 'integer' },
+            },
+            { in: 'query', name: 'page', schema: { type: 'integer', example: 1 } },
+            { in: 'query', name: 'limit', schema: { type: 'integer', example: 20 } },
+          ],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+      },
+
+      '/api/messages': {
+        post: {
+          summary: 'Gửi tin nhắn',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    receiver_id: { type: 'integer' },
+                    content: { type: 'string' },
+                  },
+                  required: ['receiver_id', 'content'],
+                },
+              },
+            },
+          },
+          responses: {
+            '201': { description: 'Gửi thành công' },
+          },
+        },
+      },
+
+      '/api/achievements': {
+        get: {
+          summary: 'Lấy danh sách thành tựu của tôi',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+      },
+
+      '/api/achievements/unlock/{slug}': {
+        post: {
+          summary: 'Mở khóa thành tựu',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'slug',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            '200': { description: 'Mở khóa thành công' },
+          },
+        },
+      },
+
+      '/api/ranking/{slug}': {
+        get: {
+          summary: 'Lấy bảng xếp hạng theo game',
+          tags: ['Social'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'slug',
+              required: true,
+              schema: { type: 'string' },
+            },
+            {
+              in: 'query',
+              name: 'scope',
+              schema: { type: 'string', enum: ['global', 'friends', 'me'] },
+            },
+            { in: 'query', name: 'page', schema: { type: 'integer', example: 1 } },
+            { in: 'query', name: 'limit', schema: { type: 'integer', example: 10 } },
+          ],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+      },
+
+      '/api/admin/games': {
+        get: {
+          summary: 'Lấy danh sách game cho admin',
+          tags: ['Admin'],
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': { description: 'Thành công' },
+          },
+        },
+      },
+
+      '/api/admin/games/{id}': {
+        put: {
+          summary: 'Cập nhật game cho admin',
+          tags: ['Admin'],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'id',
+              required: true,
+              schema: { type: 'integer' },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    instructions: { type: 'string' },
+                    board_size: { type: 'object' },
+                    is_active: { type: 'boolean' },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': { description: 'Cập nhật thành công' },
           },
         },
       },
@@ -271,8 +742,8 @@ async function startServer() {
     console.log('Database connection established successfully.');
 
     httpsServer.listen(HTTPS_PORT, () => {
-      console.log(` Server đang chạy an toàn tại: https://localhost:${HTTPS_PORT}`);
-      console.log(` Frontend được phép gọi từ: ${FRONTEND_URL}`);
+      console.log(`Server đang chạy an toàn tại: https://localhost:${HTTPS_PORT}`);
+      console.log(`Frontend được phép gọi từ: ${FRONTEND_URL}`);
     });
   } catch (error) {
     console.error('Lỗi kết nối DB:', error);
