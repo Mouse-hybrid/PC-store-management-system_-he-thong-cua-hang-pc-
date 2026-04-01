@@ -8,9 +8,9 @@ const GAME_SLUG = 'tic-tac-toe';
 
 const calculateWinner = (squares) => {
   const lines = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6],
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+    [0, 4, 8], [2, 4, 6],            
   ];
 
   for (let i = 0; i < lines.length; i++) {
@@ -31,6 +31,7 @@ export default function TicTacToe() {
   const [helpText, setHelpText] = useState('');
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
+  const [difficulty, setDifficulty] = useState('EASY'); 
 
   useEffect(() => {
     getGameHelp(GAME_SLUG)
@@ -41,12 +42,7 @@ export default function TicTacToe() {
   const winner = useMemo(() => calculateWinner(board), [board]);
   const isDraw = useMemo(() => !winner && !board.includes(null), [winner, board]);
 
-  useEffect(() => {
-    if (!isPlayerTurn || winner || isDraw) return;
-
-    // player turn, no-op
-  }, [isPlayerTurn, winner, isDraw]);
-
+  // LOGIC LƯỢT CỦA MÁY (AI)
   useEffect(() => {
     if (isPlayerTurn || winner || isDraw) return;
 
@@ -57,27 +53,67 @@ export default function TicTacToe() {
     if (!emptyIndices.length) return;
 
     const timer = setTimeout(() => {
-      const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      let chosenIndex = -1;
+
+      if (difficulty === 'HARD') {
+        // 1. Tấn công (Tìm nước đi thắng luôn)
+        for (let i = 0; i < emptyIndices.length; i++) {
+          const testBoard = [...board];
+          testBoard[emptyIndices[i]] = 'O';
+          if (calculateWinner(testBoard) === 'O') {
+            chosenIndex = emptyIndices[i];
+            break;
+          }
+        }
+
+        // 2. Phòng thủ (Chặn người chơi thắng)
+        if (chosenIndex === -1) {
+          for (let i = 0; i < emptyIndices.length; i++) {
+            const testBoard = [...board];
+            testBoard[emptyIndices[i]] = 'X';
+            if (calculateWinner(testBoard) === 'X') {
+              chosenIndex = emptyIndices[i];
+              break;
+            }
+          }
+        }
+
+        // 3. Ưu tiên chiếm trung tâm (vị trí số 4)
+        if (chosenIndex === -1 && board[4] === null) {
+          chosenIndex = 4;
+        }
+
+        // 4. Ưu tiên chiếm các góc (0, 2, 6, 8)
+        if (chosenIndex === -1) {
+          const corners = [0, 2, 6, 8].filter(i => board[i] === null);
+          if (corners.length > 0) {
+            chosenIndex = corners[Math.floor(Math.random() * corners.length)];
+          }
+        }
+      }
+
+      
+      if (chosenIndex === -1) {
+        chosenIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      }
+
       setBoard((prev) => {
         const next = [...prev];
-        next[randomIndex] = 'O';
+        next[chosenIndex] = 'O';
         return next;
       });
       setIsPlayerTurn(true);
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [isPlayerTurn, board, winner, isDraw]);
+  }, [isPlayerTurn, board, winner, isDraw, difficulty]);
 
   useEffect(() => {
     if (scoreSubmitted) return;
     if (!winner && !isDraw) return;
 
     const seconds = Math.floor((Date.now() - startTime) / 1000);
-    const score =
-      winner === 'X' ? 100 :
-      winner === 'O' ? 20 :
-      50;
+    const score = winner === 'X' ? 100 : winner === 'O' ? 20 : 50;
 
     submitScore(GAME_SLUG, score, seconds).catch(console.error);
     setScoreSubmitted(true);
@@ -152,6 +188,14 @@ export default function TicTacToe() {
       </div>
 
       <div style={{ display: 'flex', gap: '12px', marginBottom: '18px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* Nút Đổi Độ Khó */}
+        <button
+          onClick={() => setDifficulty(d => d === 'EASY' ? 'HARD' : 'EASY')}
+          style={toolbarBtn(difficulty === 'EASY' ? '#339af0' : '#fa5252')}
+        >
+          ⚙️ Khó: {difficulty === 'EASY' ? 'DỄ' : 'KHÓ'}
+        </button>
+
         <button onClick={handleSave} style={toolbarBtn('#40c057')}>💾 Save</button>
         <button onClick={handleLoad} style={toolbarBtn('#845ef7')}>📂 Load</button>
         <button onClick={() => setHelpOpen(true)} style={toolbarBtn('#339af0')}>❓ Help</button>
