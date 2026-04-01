@@ -1,0 +1,404 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  button,
+  input,
+  select,
+  textarea {
+    @apply appearance-none bg-transparent border-0 outline-none;
+  }
+}
+
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+:root {
+  --body-large-400-font-family: "Public Sans", Helvetica;
+  --body-large-400-font-size: 18px;
+  --body-large-400-font-style: normal;
+  --body-large-400-font-weight: 400;
+  --body-large-400-letter-spacing: 0px;
+  --body-large-400-line-height: 24px;
+  --body-large-500-font-family: "Public Sans", Helvetica;
+  --body-large-500-font-size: 18px;
+  --body-large-500-font-style: normal;
+  --body-large-500-font-weight: 500;
+  --body-large-500-letter-spacing: 0px;
+  --body-large-500-line-height: 24px;
+  --body-large-600-font-family: "Public Sans", Helvetica;
+  --body-large-600-font-size: 18px;
+  --body-large-600-font-style: normal;
+  --body-large-600-font-weight: 600;
+  --body-large-600-letter-spacing: 0px;
+  --body-large-600-line-height: 24px;
+  --body-medium-400-font-family: "Public Sans", Helvetica;
+  --body-medium-400-font-size: 16px;
+  --body-medium-400-font-style: normal;
+  --body-medium-400-font-weight: 400;
+  --body-medium-400-letter-spacing: 0px;
+  --body-medium-400-line-height: 24px;
+  --body-medium-500-font-family: "Public Sans", Helvetica;
+  --body-medium-500-font-size: 16px;
+  --body-medium-500-font-style: normal;
+  --body-medium-500-font-weight: 500;
+  --body-medium-500-letter-spacing: 0px;
+  --body-medium-500-line-height: 24px;
+  --body-medium-600-font-family: "Public Sans", Helvetica;
+  --body-medium-600-font-size: 16px;
+  --body-medium-600-font-style: normal;
+  --body-medium-600-font-weight: 600;
+  --body-medium-600-letter-spacing: 0px;
+  --body-medium-600-line-height: 24px;
+  --body-small-400-font-family: "Public Sans", Helvetica;
+  --body-small-400-font-size: 14px;
+  --body-small-400-font-style: normal;
+  --body-small-400-font-weight: 400;
+  --body-small-400-letter-spacing: 0px;
+  --body-small-400-line-height: 20px;
+  --body-small-500-font-family: "Public Sans", Helvetica;
+  --body-small-500-font-size: 14px;
+  --body-small-500-font-style: normal;
+  --body-small-500-font-weight: 500;
+  --body-small-500-letter-spacing: 0px;
+  --body-small-500-line-height: 20px;
+  --body-small-600-font-family: "Public Sans", Helvetica;
+  --body-small-600-font-size: 14px;
+  --body-small-600-font-style: normal;
+  --body-small-600-font-weight: 600;
+  --body-small-600-letter-spacing: 0px;
+  --body-small-600-line-height: 20px;
+  --body-tiny-400-font-family: "Public Sans", Helvetica;
+  --body-tiny-400-font-size: 12px;
+  --body-tiny-400-font-style: normal;
+  --body-tiny-400-font-weight: 400;
+  --body-tiny-400-letter-spacing: 0px;
+  --body-tiny-400-line-height: 16px;
+  --body-tiny-500-font-family: "Public Sans", Helvetica;
+  --body-tiny-500-font-size: 12px;
+  --body-tiny-500-font-style: normal;
+  --body-tiny-500-font-weight: 500;
+  --body-tiny-500-letter-spacing: 0px;
+  --body-tiny-500-line-height: 16px;
+  --body-tiny-600-font-family: "Public Sans", Helvetica;
+  --body-tiny-600-font-size: 12px;
+  --body-tiny-600-font-style: normal;
+  --body-tiny-600-font-weight: 600;
+  --body-tiny-600-letter-spacing: 0px;
+  --body-tiny-600-line-height: 16px;
+  --body-XL-400-font-family: "Public Sans", Helvetica;
+  --body-XL-400-font-size: 20px;
+  --body-XL-400-font-style: normal;
+  --body-XL-400-font-weight: 400;
+  --body-XL-400-letter-spacing: 0px;
+  --body-XL-400-line-height: 28px;
+  --body-XL-500-font-family: "Public Sans", Helvetica;
+  --body-XL-500-font-size: 20px;
+  --body-XL-500-font-style: normal;
+  --body-XL-500-font-weight: 500;
+  --body-XL-500-letter-spacing: 0px;
+  --body-XL-500-line-height: 28px;
+  --body-XL-600-font-family: "Public Sans", Helvetica;
+  --body-XL-600-font-size: 20px;
+  --body-XL-600-font-style: normal;
+  --body-XL-600-font-weight: 600;
+  --body-XL-600-letter-spacing: 0px;
+  --body-XL-600-line-height: 28px;
+  --body-XS-400-font-family: "Public Sans", Helvetica;
+  --body-XS-400-font-size: 11px;
+  --body-XS-400-font-style: normal;
+  --body-XS-400-font-weight: 400;
+  --body-XS-400-letter-spacing: 0px;
+  --body-XS-400-line-height: 12px;
+  --body-XS-500-font-family: "Public Sans", Helvetica;
+  --body-XS-500-font-size: 11px;
+  --body-XS-500-font-style: normal;
+  --body-XS-500-font-weight: 500;
+  --body-XS-500-letter-spacing: 0px;
+  --body-XS-500-line-height: 12px;
+  --body-XS-600-font-family: "Public Sans", Helvetica;
+  --body-XS-600-font-size: 11px;
+  --body-XS-600-font-style: normal;
+  --body-XS-600-font-weight: 600;
+  --body-XS-600-letter-spacing: 0px;
+  --body-XS-600-line-height: 12px;
+  --body-XXL-400-font-family: "Public Sans", Helvetica;
+  --body-XXL-400-font-size: 24px;
+  --body-XXL-400-font-style: normal;
+  --body-XXL-400-font-weight: 400;
+  --body-XXL-400-letter-spacing: 0px;
+  --body-XXL-400-line-height: 32px;
+  --danger-100: rgba(252, 222, 222, 1);
+  --danger-200: rgba(248, 188, 188, 1);
+  --danger-300: rgba(245, 155, 155, 1);
+  --danger-400: rgba(241, 121, 121, 1);
+  --danger-50: rgba(253, 238, 238, 1);
+  --danger-500: rgba(238, 88, 88, 1);
+  --danger-600: rgba(190, 70, 70, 1);
+  --danger-700: rgba(143, 53, 53, 1);
+  --danger-800: rgba(95, 35, 35, 1);
+  --danger-900: rgba(48, 18, 18, 1);
+  --display-01-font-family: "Public Sans", Helvetica;
+  --display-01-font-size: 64px;
+  --display-01-font-style: normal;
+  --display-01-font-weight: 600;
+  --display-01-letter-spacing: 0px;
+  --display-01-line-height: 72px;
+  --display-02-font-family: "Public Sans", Helvetica;
+  --display-02-font-size: 56px;
+  --display-02-font-style: normal;
+  --display-02-font-weight: 600;
+  --display-02-letter-spacing: 0px;
+  --display-02-line-height: 64px;
+  --display-03-font-family: "Public Sans", Helvetica;
+  --display-03-font-size: 48px;
+  --display-03-font-style: normal;
+  --display-03-font-weight: 600;
+  --display-03-letter-spacing: 0px;
+  --display-03-line-height: 56px;
+  --display-04-font-family: "Public Sans", Helvetica;
+  --display-04-font-size: 40px;
+  --display-04-font-style: normal;
+  --display-04-font-weight: 600;
+  --display-04-letter-spacing: 0px;
+  --display-04-line-height: 48px;
+  --display-05-font-family: "Public Sans", Helvetica;
+  --display-05-font-size: 36px;
+  --display-05-font-style: normal;
+  --display-05-font-weight: 600;
+  --display-05-letter-spacing: 0px;
+  --display-05-line-height: 44px;
+  --dropdown-shadow: 0px 8px 40px 0px rgba(0, 0, 0, 0.12);
+  --gray-00: rgba(255, 255, 255, 1);
+  --gray-100: rgba(228, 231, 233, 1);
+  --gray-200: rgba(201, 207, 210, 1);
+  --gray-300: rgba(173, 183, 188, 1);
+  --gray-400: rgba(146, 159, 165, 1);
+  --gray-50: rgba(242, 244, 245, 1);
+  --gray-500: rgba(119, 135, 143, 1);
+  --gray-600: rgba(95, 108, 114, 1);
+  --gray-700: rgba(71, 81, 86, 1);
+  --gray-800: rgba(48, 54, 57, 1);
+  --gray-900: rgba(25, 28, 31, 1);
+  --heading-01-font-family: "Public Sans", Helvetica;
+  --heading-01-font-size: 32px;
+  --heading-01-font-style: normal;
+  --heading-01-font-weight: 600;
+  --heading-01-letter-spacing: 0px;
+  --heading-01-line-height: 40px;
+  --heading-02-font-family: "Public Sans", Helvetica;
+  --heading-02-font-size: 28px;
+  --heading-02-font-style: normal;
+  --heading-02-font-weight: 600;
+  --heading-02-letter-spacing: 0px;
+  --heading-02-line-height: 32px;
+  --heading-03-font-family: "Public Sans", Helvetica;
+  --heading-03-font-size: 24px;
+  --heading-03-font-style: normal;
+  --heading-03-font-weight: 600;
+  --heading-03-letter-spacing: 0px;
+  --heading-03-line-height: 32px;
+  --heading-06-font-family: "Public Sans", Helvetica;
+  --heading-06-font-size: 16px;
+  --heading-06-font-style: normal;
+  --heading-06-font-weight: 700;
+  --heading-06-letter-spacing: 0.19200000762939454px;
+  --heading-06-line-height: 56px;
+  --heading-07-font-family: "Public Sans", Helvetica;
+  --heading-07-font-size: 14px;
+  --heading-07-font-style: normal;
+  --heading-07-font-weight: 700;
+  --heading-07-letter-spacing: 0.1680000066757202px;
+  --heading-07-line-height: 48px;
+  --label-01-font-family: "Public Sans", Helvetica;
+  --label-01-font-size: 18px;
+  --label-01-font-style: normal;
+  --label-01-font-weight: 500;
+  --label-01-letter-spacing: 0px;
+  --label-01-line-height: 28px;
+  --label-02-font-family: "Public Sans", Helvetica;
+  --label-02-font-size: 16px;
+  --label-02-font-style: normal;
+  --label-02-font-weight: 500;
+  --label-02-letter-spacing: 0px;
+  --label-02-line-height: 24px;
+  --label-03-font-family: "Public Sans", Helvetica;
+  --label-03-font-size: 14px;
+  --label-03-font-style: normal;
+  --label-03-font-weight: 500;
+  --label-03-letter-spacing: 0px;
+  --label-03-line-height: 20px;
+  --label-04-font-family: "Public Sans", Helvetica;
+  --label-04-font-size: 12px;
+  --label-04-font-style: normal;
+  --label-04-font-weight: 500;
+  --label-04-letter-spacing: 0px;
+  --label-04-line-height: 150%;
+  --label-05-font-family: "Public Sans", Helvetica;
+  --label-05-font-size: 11px;
+  --label-05-font-style: normal;
+  --label-05-font-weight: 500;
+  --label-05-letter-spacing: 0px;
+  --label-05-line-height: 16px;
+  --primary-100: rgba(255, 231, 214, 1);
+  --primary-200: rgba(255, 206, 173, 1);
+  --primary-300: rgba(255, 182, 133, 1);
+  --primary-400: rgba(255, 157, 92, 1);
+  --primary-50: rgba(255, 243, 235, 1);
+  --primary-500: rgba(250, 130, 50, 1);
+  --primary-600: rgba(222, 115, 45, 1);
+  --primary-700: rgba(153, 80, 31, 1);
+  --primary-800: rgba(102, 53, 20, 1);
+  --primary-900: rgba(51, 27, 10, 1);
+  --secondary-100: rgba(213, 237, 253, 1);
+  --secondary-200: rgba(171, 219, 250, 1);
+  --secondary-300: rgba(129, 201, 248, 1);
+  --secondary-400: rgba(87, 183, 245, 1);
+  --secondary-50: rgba(234, 246, 254, 1);
+  --secondary-500: rgba(45, 165, 243, 1);
+  --secondary-600: rgba(36, 132, 194, 1);
+  --secondary-700: rgba(27, 99, 146, 1);
+  --secondary-800: rgba(18, 66, 97, 1);
+  --secondary-900: rgba(9, 33, 49, 1);
+  --success-100: rgba(213, 240, 211, 1);
+  --success-200: rgba(171, 224, 167, 1);
+  --success-300: rgba(129, 209, 124, 1);
+  --success-400: rgba(87, 193, 80, 1);
+  --success-50: rgba(234, 247, 233, 1);
+  --success-500: rgba(45, 178, 36, 1);
+  --success-600: rgba(36, 142, 29, 1);
+  --success-700: rgba(27, 107, 22, 1);
+  --success-800: rgba(18, 71, 14, 1);
+  --success-900: rgba(9, 36, 7, 1);
+  --warning-100: rgba(251, 244, 206, 1);
+  --warning-200: rgba(247, 233, 158, 1);
+  --warning-300: rgba(243, 222, 109, 1);
+  --warning-400: rgba(239, 211, 61, 1);
+  --warning-50: rgba(253, 250, 231, 1);
+  --warning-500: rgba(235, 200, 12, 1);
+  --warning-600: rgba(188, 160, 10, 1);
+  --warning-700: rgba(141, 120, 7, 1);
+  --warning-800: rgba(94, 80, 5, 1);
+  --warning-900: rgba(47, 40, 2, 1);
+}
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+.footer-logo {
+  background: transparent !important;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
