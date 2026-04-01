@@ -59,5 +59,13 @@ exports.seed = async function (knex) {
       role: 'customer',
       avatar_url: null,
     },
+    {
+      username: 'player5',
+      email: 'player5@gmail.com',
+      password_hash: hashedPassword,
+      full_name: 'Người chơi Thành tựu & Ranking',
+      role: 'customer',
+      avatar_url: null,
+    },
   ]);
 };
