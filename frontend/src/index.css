@@ -1,0 +1,74 @@
+/* 1. KHAI BÁO BIẾN MÀU CHO CHẾ ĐỘ LIGHT (MẶC ĐỊNH) */
+:root {
+  --bg-main: #ffffff;
+  --text-main: #213547;
+  --board-bg: #f8f9fa;
+  --dot-bg: #d1d5db;
+  --control-bg: #f1f3f5;
+  --btn-text: #ffffff;
+}
+
+/* 2. KHAI BÁO BIẾN MÀU CHO CHẾ ĐỘ DARK */
+[data-theme='dark'] {
+  --bg-main: #242424;
+  --text-main: rgba(255, 255, 255, 0.87);
+  --board-bg: #2f3336;
+  --dot-bg: #4a4f55;
+  --control-bg: #1e1e1e;
+  --btn-text: rgba(255, 255, 255, 0.87);
+}
+
+/* 3. CÁC SETTING CƠ BẢN GIỮ NGUYÊN TỪ VITE */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  display: flex;
+  place-items: center;
+  justify-content: center;
+  min-width: 320px;
+  min-height: 100vh;
+  /* Áp dụng biến màu nền và chữ cho Body */
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s, color 0.3s; /* Hiệu ứng chuyển màu mượt mà */
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  flex-direction: column; /* Xếp Navbar và Game theo chiều dọc */
+  justify-content: flex-start; /* Đẩy toàn bộ nội dung lên trên cùng */
+  align-items: center;
+}
+
+/* Nút bấm mặc định */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-family: inherit;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+/* --- RESPONSIVE CHO NAVBAR VÀ CÁC THÀNH PHẦN CHUNG --- */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column !important; /* Xếp dọc logo và các nút */
+    gap: 15px; /* Tạo khoảng cách giữa 2 hàng */
+    padding: 15px 10px !important;
+  }
+  
+  /* Chỉnh cho các khung đăng nhập/đăng ký/hồ sơ không bị tràn viền */
+  div[style*="maxWidth: 500px"], 
+  div[style*="maxWidth: '500px'"] {
+    width: 90% !important;
+    margin: 20px auto !important;
+    padding: 20px !important;
+  }
+}

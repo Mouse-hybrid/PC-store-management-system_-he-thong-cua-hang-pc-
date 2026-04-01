@@ -1,0 +1,87 @@
+.board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+/* Khung chứa ma trận */
+.matrix-board {
+  display: grid;
+  gap: 4px; /* Khoảng cách giữa các chấm */
+  background-color: var(--board-bg);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+/* Từng chấm tròn đơn lẻ */
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--dot-bg);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* Đổ bóng chìm cho giống nút thật */
+}
+
+/* Khung Control Pad */
+.control-pad {
+  background-color: var(--control-bg);
+  padding: 20px 40px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.row-top, .row-bottom {
+  display: flex;
+  gap: 20px;
+}
+
+/* Style cho các nút bấm */
+.btn-control {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.1s;
+}
+.btn-control:active { transform: scale(0.9); }
+.btn-dark { background-color: #343a40; border-radius: 12px; } /* Nút Left/Right vuông bo góc */
+.btn-yellow { background-color: #fcc419; }
+.btn-red { background-color: #fa5252; }
+.btn-blue { background-color: #339af0; }
+
+/* Các class màu sắc cho chấm tròn */
+.dot.red {
+  background-color: #fa5252;
+  box-shadow: 0 0 8px #fa5252; /* Hiệu ứng phát sáng nhẹ */
+}
+
+.dot.blue {
+  background-color: #339af0;
+  box-shadow: 0 0 8px #339af0;
+}
+
+.dot.yellow {
+  background-color: #fcc419;
+  box-shadow: 0 0 10px #fcc419;
+  animation: blink 0.8s infinite alternate; /* Hiệu ứng nhấp nháy */
+}
+
+/* Keyframes cho hiệu ứng nhấp nháy */
+@keyframes blink {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.4; transform: scale(0.9); }
+}
