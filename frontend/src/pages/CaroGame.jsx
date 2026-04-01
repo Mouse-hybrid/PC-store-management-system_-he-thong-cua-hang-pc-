@@ -30,7 +30,7 @@ export default function CaroGame({
   const TOTAL_CELLS = ROWS * COLS;
 
   const [gameStage, setGameStage] = useState('SELECT_MODE');
-  const [menuIndex, setMenuIndex] = useState(0); // 0 = NEW, 1 = LOAD
+  const [menuIndex, setMenuIndex] = useState(0); 
   const [board, setBoard] = useState(Array(TOTAL_CELLS).fill(null));
   const [cursor, setCursor] = useState(Math.floor(TOTAL_CELLS / 2));
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
@@ -41,6 +41,7 @@ export default function CaroGame({
   );
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
+  const [difficulty, setDifficulty] = useState('EASY'); 
 
   const getIndex = (r, c) => r * COLS + c;
 
@@ -81,7 +82,7 @@ export default function CaroGame({
       setMenuIndex((prev) => (prev === 0 ? 1 : 0));
       return;
     }
-    if (cursor % COLS > 0) setCursor((c) => c - 1);
+    setCursor((c) => (c % COLS > 0 ? c - 1 : c));
   };
 
   const handleRight = () => {
@@ -89,7 +90,7 @@ export default function CaroGame({
       setMenuIndex((prev) => (prev === 0 ? 1 : 0));
       return;
     }
-    if (cursor % COLS < COLS - 1) setCursor((c) => c + 1);
+    setCursor((c) => (c % COLS < COLS - 1 ? c + 1 : c));
   };
 
   const handleUp = () => {
@@ -97,7 +98,7 @@ export default function CaroGame({
       setMenuIndex((prev) => (prev === 0 ? 1 : 0));
       return;
     }
-    if (cursor >= COLS) setCursor((c) => c - COLS);
+    setCursor((c) => (c >= COLS ? c - COLS : c));
   };
 
   const handleDown = () => {
@@ -105,7 +106,7 @@ export default function CaroGame({
       setMenuIndex((prev) => (prev === 0 ? 1 : 0));
       return;
     }
-    if (cursor < TOTAL_CELLS - COLS) setCursor((c) => c + COLS);
+    setCursor((c) => (c < TOTAL_CELLS - COLS ? c + COLS : c));
   };
 
   const handleBack = () => {
@@ -211,15 +212,18 @@ export default function CaroGame({
     }
   };
 
-  const checkWin = (currentBoard, index, player) => {
+  // --- HÀM MỚI: Đếm số lượng ô liên tiếp dài nhất ---
+  const getConsecutiveLength = (currentBoard, index, player) => {
     const r = Math.floor(index / COLS);
     const c = index % COLS;
     const directions = [
-      [0, 1],
-      [1, 0],
-      [1, 1],
-      [1, -1],
+      [0, 1], 
+      [1, 0], 
+      [1, 1], 
+      [1, -1], 
     ];
+
+    let maxLength = 1;
 
     for (const [dr, dc] of directions) {
       let count = 1;
@@ -227,59 +231,38 @@ export default function CaroGame({
       for (let i = 1; i < winLength; i++) {
         const nr = r + dr * i;
         const nc = c + dc * i;
-        if (
-          nr >= 0 &&
-          nr < ROWS &&
-          nc >= 0 &&
-          nc < COLS &&
-          currentBoard[nr * COLS + nc] === player
-        ) {
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && currentBoard[nr * COLS + nc] === player) {
           count++;
-        } else {
-          break;
-        }
+        } else break;
       }
 
       for (let i = 1; i < winLength; i++) {
         const nr = r - dr * i;
         const nc = c - dc * i;
-        if (
-          nr >= 0 &&
-          nr < ROWS &&
-          nc >= 0 &&
-          nc < COLS &&
-          currentBoard[nr * COLS + nc] === player
-        ) {
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && currentBoard[nr * COLS + nc] === player) {
           count++;
-        } else {
-          break;
-        }
+        } else break;
       }
 
-      if (count >= winLength) return true;
+      if (count > maxLength) maxLength = count;
     }
-
-    return false;
+    return maxLength;
   };
 
-  const handleEnter = async () => {
-    if (gameStage === 'SELECT_MODE') {
-      if (menuIndex === 0) {
-        resetGame();
-        setGameStage('PLAYING');
-      } else {
-        await handleLoad();
-      }
-      return;
-    }
+  const checkWin = (currentBoard, index, player) => {
+    return getConsecutiveLength(currentBoard, index, player) >= winLength;
+  };
 
-    if (board[cursor] || winner || !isPlayerTurn) return;
+  const placePiece = (targetIndex) => {
+    if (board[targetIndex] || winner || !isPlayerTurn) return;
+
+    setCursor(targetIndex);
 
     const newBoard = [...board];
-    newBoard[cursor] = 'X';
+    newBoard[targetIndex] = 'X';
     setBoard(newBoard);
 
-    if (checkWin(newBoard, cursor, 'X')) {
+    if (checkWin(newBoard, targetIndex, 'X')) {
       setWinner('Player');
       return;
     }
@@ -292,6 +275,61 @@ export default function CaroGame({
 
     setIsPlayerTurn(false);
   };
+
+  const handleEnter = async () => {
+    if (gameStage === 'SELECT_MODE') {
+      if (menuIndex === 0) {
+        resetGame();
+        setGameStage('PLAYING');
+      } else {
+        await handleLoad();
+      }
+      return;
+    }
+    placePiece(cursor);
+  };
+
+  const handleCellClick = async (index) => {
+    if (gameStage === 'SELECT_MODE') {
+      if (newIndices.includes(index)) {
+        setMenuIndex(0);
+        resetGame();
+        setGameStage('PLAYING');
+      } else if (loadIndices.includes(index)) {
+        setMenuIndex(1);
+        await handleLoad();
+      }
+      return;
+    }
+    placePiece(index);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (helpOpen) {
+        if (e.key === 'Escape' || e.key === 'Enter') setHelpOpen(false);
+        return;
+      }
+
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      switch (e.key) {
+        case 'ArrowUp': case 'w': case 'W': handleUp(); break;
+        case 'ArrowDown': case 's': case 'S': handleDown(); break;
+        case 'ArrowLeft': case 'a': case 'A': handleLeft(); break;
+        case 'ArrowRight': case 'd': case 'D': handleRight(); break;
+        case 'Enter': case ' ': handleEnter(); break;
+        case 'Escape': case 'Backspace': handleBack(); break;
+        case 'h': case 'H': handleHelp(); break;
+        default: break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cursor, gameStage, menuIndex, board, isPlayerTurn, winner, helpOpen]);
 
   useEffect(() => {
     if (gameStage !== 'PLAYING' || isPlayerTurn || winner) return;
@@ -306,13 +344,55 @@ export default function CaroGame({
     }
 
     const timeout = setTimeout(() => {
-      const randomIndex =
-        emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-      const newBoard = [...board];
-      newBoard[randomIndex] = 'O';
-      setBoard(newBoard);
+      let chosenIndex = -1;
 
-      if (checkWin(newBoard, randomIndex, 'O')) {
+      if (difficulty === 'HARD') {
+        let bestScore = -1;
+
+        for (let i = 0; i < emptyIndices.length; i++) {
+          const testIndex = emptyIndices[i];
+
+          const attackLen = getConsecutiveLength(board, testIndex, 'O');
+          const defenseLen = getConsecutiveLength(board, testIndex, 'X');
+
+          let score = 0;
+
+    
+          if (attackLen >= winLength) score += 100000;
+          else if (defenseLen >= winLength) score += 50000;
+          else if (attackLen === 4) score += 10000;
+          else if (defenseLen === 4) score += 8000;
+          else if (attackLen === 3) score += 3000;
+          else if (defenseLen === 3) score += 2000;
+          else {
+            score += attackLen * 10;
+            score += defenseLen * 8;
+          }
+
+          const r = Math.floor(testIndex / COLS);
+          const c = testIndex % COLS;
+          const centerDist = Math.abs(r - ROWS / 2) + Math.abs(c - COLS / 2);
+          score -= centerDist; 
+
+          score += Math.random();
+
+          if (score > bestScore) {
+            bestScore = score;
+            chosenIndex = testIndex;
+          }
+        }
+      }
+
+      if (chosenIndex === -1) {
+        chosenIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      }
+
+      const newBoard = [...board];
+      newBoard[chosenIndex] = 'O';
+      setBoard(newBoard);
+      setCursor(chosenIndex);
+
+      if (checkWin(newBoard, chosenIndex, 'O')) {
         setWinner('Computer');
         return;
       }
@@ -324,20 +404,17 @@ export default function CaroGame({
       }
 
       setIsPlayerTurn(true);
-    }, 450);
+    }, 500);
 
     return () => clearTimeout(timeout);
-  }, [isPlayerTurn, board, winner, gameStage]);
+  }, [isPlayerTurn, board, winner, gameStage, difficulty]);
 
   useEffect(() => {
     if (gameStage !== 'PLAYING') return;
     if (!winner || scoreSubmitted) return;
 
     const seconds = Math.floor((Date.now() - startTime) / 1000);
-    const score =
-      winner === 'Player' ? 100 :
-      winner === 'Draw' ? 50 :
-      20;
+    const score = winner === 'Player' ? 100 : winner === 'Draw' ? 50 : 20;
 
     submitScore(gameSlug, score, seconds).catch(console.error);
     setScoreSubmitted(true);
@@ -347,11 +424,9 @@ export default function CaroGame({
     if (gameStage === 'SELECT_MODE') {
       return `CHỌN CHẾ ĐỘ: ${menuIndex === 0 ? 'VÁN MỚI' : 'TẢI GAME'}`;
     }
-
     if (winner === 'Draw') return '🤝 Hòa!';
     if (winner === 'Player') return '🎉 Bạn thắng!';
     if (winner === 'Computer') return '🤖 Máy thắng!';
-
     return `Lượt: ${isPlayerTurn ? 'Bạn' : 'Máy'}`;
   };
 
@@ -370,26 +445,43 @@ export default function CaroGame({
         }}
       >
         <h2 style={{ color: 'var(--text-main)', margin: 0 }}>
-          {title} ({boardSize}x{boardSize} - thắng {winLength})
+          {title} ({boardSize}x{boardSize})
         </h2>
 
-        <button
-          onClick={handleSave}
-          style={{
-            background: '#40c057',
-            color: 'white',
-            padding: '8px 12px',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            fontWeight: 'bold',
-          }}
-        >
-          <Save size={16} /> Lưu Game
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => setDifficulty(d => d === 'EASY' ? 'HARD' : 'EASY')}
+            style={{
+              background: difficulty === 'EASY' ? '#339af0' : '#fa5252',
+              color: 'white',
+              padding: '8px 12px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            Độ Khó: {difficulty === 'EASY' ? 'DỄ' : 'KHÓ'}
+          </button>
+
+          <button
+            onClick={handleSave}
+            style={{
+              background: '#40c057',
+              color: 'white',
+              padding: '8px 12px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontWeight: 'bold',
+            }}
+          >
+            <Save size={16} /> Lưu Game
+          </button>
+        </div>
       </div>
 
       <div
@@ -429,7 +521,14 @@ export default function CaroGame({
             else if (index === cursor && !winner) colorClass = 'yellow';
           }
 
-          return <div key={index} className={`dot ${colorClass}`}></div>;
+          return (
+            <div 
+              key={index} 
+              className={`dot ${colorClass}`}
+              onClick={() => handleCellClick(index)}
+              style={{ cursor: 'pointer' }}
+            ></div>
+          );
         })}
       </div>
 
