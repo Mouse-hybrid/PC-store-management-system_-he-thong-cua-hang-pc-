@@ -12,6 +12,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const { verifyToken } = require('./middleware/authMiddleware');
 
 const app = express();
+<<<<<<< HEAD
 const db = knex(knexConfig.development);
 
 // =========================
@@ -58,6 +59,14 @@ app.use('/api/admin/games', adminGameRoutes);
 // =========================
 // Swagger config
 // =========================
+=======
+app.use(cors());
+app.use(express.json());
+
+const db = knex(knexConfig.development);
+
+// --- CẤU HÌNH SWAGGER BẰNG JSON (CHỐNG LỖI CĂN LỀ) ---
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -66,6 +75,7 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'Tài liệu hướng dẫn các API cho hệ thống Game Matrix',
     },
+<<<<<<< HEAD
     servers: [
       {
         url: `https://localhost:${process.env.HTTPS_PORT || 3636}`,
@@ -78,6 +88,12 @@ const swaggerOptions = {
           scheme: 'bearer',
           bearerFormat: 'JWT',
         },
+=======
+    servers: [{ url: `https://localhost:${process.env.HTTPS_PORT || 3636}` }],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
       },
     },
     paths: {
@@ -86,13 +102,17 @@ const swaggerOptions = {
           summary: 'Đăng ký tài khoản',
           tags: ['Authentication'],
           requestBody: {
+<<<<<<< HEAD
             required: true,
+=======
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
                     username: { type: 'string' },
+<<<<<<< HEAD
                     full_name: { type: 'string' },
                     email: { type: 'string' },
                     password: { type: 'string' },
@@ -109,18 +129,35 @@ const swaggerOptions = {
         },
       },
 
+=======
+                    email: { type: 'string' },
+                    password: { type: 'string' },
+                    full_name: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '201': { description: 'Thành công' }, '400': { description: 'Lỗi' } }
+        }
+      },
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
       '/api/auth/login': {
         post: {
           summary: 'Đăng nhập',
           tags: ['Authentication'],
           requestBody: {
+<<<<<<< HEAD
             required: true,
+=======
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
                     email: { type: 'string' },
+<<<<<<< HEAD
                     password: { type: 'string' },
                   },
                   required: ['email', 'password'],
@@ -223,11 +260,45 @@ const swaggerOptions = {
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
+=======
+                    password: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Thành công' }, '401': { description: 'Lỗi' } }
+        }
+      },
+      '/api/auth/me': {
+        get: {
+          summary: 'Lấy thông tin cá nhân (Profile)',
+          tags: ['Authentication'],
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Thành công' }, '401': { description: 'Chưa xác thực' } }
+        }
+      },
+      '/api/auth/users': {
+        get: {
+          summary: 'Lấy danh sách người dùng (Chỉ dành cho Admin)',
+          tags: ['Authentication'],
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Thành công' }, '403': { description: 'Từ chối truy cập' } }
+        }
+      },
+      '/api/auth/upload-avatar': {
+        post: {
+          summary: 'Tải ảnh đại diện (Upload)',
+          tags: ['Authentication'],
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
             content: {
               'multipart/form-data': {
                 schema: {
                   type: 'object',
                   properties: {
+<<<<<<< HEAD
                     avatar: {
                       type: 'string',
                       format: 'binary',
@@ -295,12 +366,30 @@ const swaggerOptions = {
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
+=======
+                    avatar: { type: 'string', format: 'binary', description: 'File ảnh đại diện' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Thành công' } }
+        }
+      },
+      '/api/game/save': {
+        post: {
+          summary: 'Lưu Game',
+          tags: ['Game'],
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
                     gameSlug: { type: 'string' },
+<<<<<<< HEAD
                     boardState: { type: 'object' },
                     isPlayerTurn: { type: 'boolean' },
                   },
@@ -693,10 +782,35 @@ const swaggerOptions = {
     },
   },
   apis: [],
+=======
+                    boardState: { type: 'array', items: { type: 'string', nullable: true } },
+                    isPlayerTurn: { type: 'boolean' }
+                  }
+                }
+              }
+            }
+          },
+          responses: { '200': { description: 'Thành công' } }
+        }
+      },
+      '/api/game/load/{slug}': {
+        get: {
+          summary: 'Tải Game',
+          tags: ['Game'],
+          security: [{ bearerAuth: [] }],
+          parameters: [{ in: 'path', name: 'slug', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Thành công' }, '404': { description: 'Không tìm thấy' } }
+        }
+      }
+    }
+  },
+  apis: [], // Để trống vì chúng ta đã khai báo paths ở trên
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
+<<<<<<< HEAD
 // Bảo vệ API docs bằng token
 app.use('/api-docs', verifyToken, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -712,10 +826,32 @@ app.get('/api/test-db', async (req, res) => {
     });
   } catch (error) {
     console.error('Lỗi test DB:', error);
+=======
+// Bảo vệ trang API-Docs bằng Token
+app.use('/api-docs', swaggerUi.serve, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// Cho phép Frontend truy cập vào thư mục ảnh
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+const gameRoutes = require('./routes/gameRoutes');
+app.use('/api/game', gameRoutes);
+
+const HTTPS_PORT = process.env.HTTPS_PORT || 3636;
+
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await db.raw('SELECT NOW()');
+    res.json({ message: 'Kết nối Database thành công!', time: result.rows[0] });
+  } catch (error) {
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
     res.status(500).json({ error: 'Lỗi kết nối Database' });
   }
 });
 
+<<<<<<< HEAD
 // =========================
 // HTTPS server
 // =========================
@@ -734,16 +870,30 @@ function readTlsOptions() {
 }
 
 const HTTPS_PORT = process.env.HTTPS_PORT || 3636;
+=======
+// Chạy HTTPS Server
+function readTlsOptions() {
+  const keyPath = path.resolve(process.env.SSL_KEY_PATH || './certs/localhost-key.pem');
+  const certPath = path.resolve(process.env.SSL_CERT_PATH || './certs/localhost-cert.pem');
+  return { key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) };
+}
+
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
 const httpsServer = https.createServer(readTlsOptions(), app);
 
 async function startServer() {
   try {
     await db.raw('SELECT 1+1 AS result');
     console.log('Database connection established successfully.');
+<<<<<<< HEAD
 
     httpsServer.listen(HTTPS_PORT, () => {
       console.log(`Server đang chạy an toàn tại: https://localhost:${HTTPS_PORT}`);
       console.log(`Frontend được phép gọi từ: ${FRONTEND_URL}`);
+=======
+    httpsServer.listen(HTTPS_PORT, () => {
+      console.log(`🚀 Server đang chạy an toàn tại: https://localhost:${HTTPS_PORT}`);
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
     });
   } catch (error) {
     console.error('Lỗi kết nối DB:', error);

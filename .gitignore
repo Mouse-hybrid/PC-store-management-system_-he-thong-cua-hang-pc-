@@ -11,7 +11,11 @@ frontend/node_modules/
 # --- Environment Variables ---
 # Chứa mật khẩu, Token, DB_URL nên cần bảo mật
 .env
+<<<<<<< HEAD
 .env.example
+=======
+.env.local
+>>>>>>> 90174cc82f987f11ca3971b1252da19457ca1cf4
 backend/.env
 
 # --- Build/Logs ---
